@@ -1,21 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Police Stations</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f7f6; padding: 40px; }
-        h2 { color: #2c3e50; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #2980b9; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-    </style>
-</head>
-<body>
+@extends('layouts.app')
 
-    <h2>Stations</h2>
+@section('content')
+    <h2>Registered Police Stations</h2>
 
     <table>
         <thead>
@@ -39,6 +25,4 @@
             @endforeach
         </tbody>
     </table>
-
-</body>
-</html>
+@endsection

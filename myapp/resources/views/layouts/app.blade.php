@@ -22,9 +22,9 @@
 
     <nav>
         <a href="/stations">Stations</a>
-        <a href="#">Officers</a>
-        <a href="#">Criminals</a>
-        <a href="#">Cases (FIR)</a>
+        <a href="/officers">Officers</a>
+        <a href="/criminals">Criminals</a>
+        <a href="/cases">Cases (FIR)</a>
     </nav>
 
     <div class="container">
