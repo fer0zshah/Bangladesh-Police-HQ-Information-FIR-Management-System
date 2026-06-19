@@ -12,7 +12,7 @@ class CitizenComplaint extends Model
     protected $fillable = ['station_id', 'complainant_name', 'complainant_nid', 'description', 'submitted_date', 'status'];
 
     public function station(): BelongsTo
-    {
+    { 
         return $this->belongsTo(Station::class, 'station_id', 'station_id');
     }
 

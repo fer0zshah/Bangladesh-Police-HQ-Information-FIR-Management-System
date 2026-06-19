@@ -13,8 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name', 100);
             $table->string('email')->unique();
+            
+            // Custom Fields for Police HQ System
+            $table->string('nid_number', 20)->unique()->nullable();
+            $table->string('phone', 15)->nullable();
+            
+            // Role-based Access Control
+            // Defaulting to 'citizen' ensures public users registering get the lowest access automatically
+            $table->enum('role', ['super_admin', 'station_oc', 'citizen'])->default('citizen');
+            
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
