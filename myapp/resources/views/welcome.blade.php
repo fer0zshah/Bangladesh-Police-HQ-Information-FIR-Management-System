@@ -36,7 +36,7 @@
     <nav>
         <a href="/" class="nav-brand">BD Police HQ Portal</a>
         <div class="nav-links">
-            <a href="/">Dashboard</a>
+            <a href="/">Home</a> 
             <a href="/stations">Browse Stations</a>
             <a href="#">About Us</a>
             <a href="#">Contact</a>
@@ -47,7 +47,13 @@
             @endguest
 
             @auth
-                <a href="/dashboard" class="btn-auth">Go to Dashboard →</a>
+                @if(auth()->user()->role === 'super_admin')
+                    <a href="/admin/dashboard" class="btn-auth">Go to HQ Dashboard →</a>
+                @elseif(auth()->user()->role === 'station_oc')
+                    <a href="/oc/dashboard" class="btn-auth">Go to OC Dashboard →</a>
+                @else
+                    <a href="/citizen/my-complaints" class="btn-auth">My Complaints →</a>
+                @endif
             @endauth
         </div>
     </nav>
@@ -82,27 +88,27 @@
     </div>
 
     <div class="container">
-    <h2>System Database Overview</h2>
-    <div class="card-grid">
-        <div class="card">
-            <h3>Police Officers</h3>
-            <p>{{ \App\Models\Officer::count() }}</p>
-            <a href="/officers">View List</a>
-        </div>
-        
-        <div class="card">
-            <h3>Criminals (W)</h3>
-            <p>{{ \App\Models\Criminal::where('wanted_status', 1)->count() }}</p>
-            <a href="/criminals">View List</a>
-        </div>
+        <h2>System Database Overview</h2>
+        <div class="card-grid">
+            <div class="card">
+                <h3>Police Officers</h3>
+                <p>{{ \App\Models\Officer::count() }}</p>
+                <a href="/officers">View List</a>
+            </div>
+            
+            <div class="card">
+                <h3>Criminals (W)</h3>
+                <p>{{ \App\Models\Criminal::where('wanted_status', 1)->count() }}</p>
+                <a href="/criminals">View List</a>
+            </div>
 
-        <div class="card">
-            <h3>Total Cases</h3>
-            <p>{{ \App\Models\CaseFir::count() }}</p>
-            <a href="/cases">View List</a>
+            <div class="card">
+                <h3>Total Cases</h3>
+                <p>{{ \App\Models\CaseFir::count() }}</p>
+                <a href="/cases">View List</a>
+            </div>
         </div>
     </div>
-</div>
 
 </body>
 </html>

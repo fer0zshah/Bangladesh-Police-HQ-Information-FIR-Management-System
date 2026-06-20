@@ -9,7 +9,10 @@ use App\Models\CitizenComplaint;
 use App\Models\Criminal;
 use App\Models\CaseFir;
 use App\Models\Evidence;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+
 
 class PoliceHqSeeder extends Seeder
 {
@@ -93,5 +96,25 @@ class PoliceHqSeeder extends Seeder
             'description' => 'Local knife recovered from the crime scene.',
             'collected_date' => now()->subDay()
         ]);
+
+        User::create([
+    'name' => 'OC Dhaka',
+    'email' => 'oc@dhaka.com',
+    'nid_number' => '9998887776',
+    'phone' => '01711000000',
+    'role' => 'station_oc',
+    'password' => Hash::make('password'),
+
+]);
+
+       User::create([
+    'name' => 'Admin',
+    'email' => 'admin@hq.com',
+    'nid_number' => '1112223334',
+    'phone' => '01811000000',
+    'role' => 'super_admin',
+    'password' => Hash::make('password'),
+
+]);
     }
 }
