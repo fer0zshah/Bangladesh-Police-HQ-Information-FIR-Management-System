@@ -42,20 +42,63 @@ Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group
     Route::get('/dashboard', function () {
         return view('oc.dashboard');
     })->name('oc.dashboard');
-    // You will put the OC's manage complaints/cases routes here later!
 });
 
 /*
 |--------------------------------------------------------------------------
-| SUPER ADMIN HQ DASHBOARD (Only 'super_admin' can access)
+| SUPER ADMIN HQ (Only 'super_admin' can access)
+| Controllers live in App\Http\Controllers\Admin\ namespace
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', CheckRole::class.':super_admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', function () {
-       return view('admin.dashboard');
-    })->name('admin.dashboard');
-    // You will put the promote/demote officer routes here later!
-});
+Route::middleware(['auth', CheckRole::class.':super_admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        // ── Phase 1: Dashboard overview ───────────────────────────────
+        Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+            ->name('dashboard');
+
+        // ── Phase 2: Station CRUD ─────────────────────────────────────
+        Route::resource('stations', App\Http\Controllers\Admin\StationController::class)
+            ->names('stations');
+
+        // ── Phase 2: Officer CRUD + OC toggle ────────────────────────
+        Route::resource('officers', App\Http\Controllers\Admin\OfficerController::class)
+            ->names('officers');
+        Route::patch('officers/{officer}/toggle-oc',
+            [App\Http\Controllers\Admin\OfficerController::class, 'toggleOc'])
+            ->name('officers.toggleOc');
+
+        // ── Phase 3: Criminal registry (read + edit + wanted toggle) ──
+        Route::get('criminals',
+            [App\Http\Controllers\Admin\CriminalController::class, 'index'])
+            ->name('criminals.index');
+        Route::get('criminals/{criminal}/edit',
+            [App\Http\Controllers\Admin\CriminalController::class, 'edit'])
+            ->name('criminals.edit');
+        Route::patch('criminals/{criminal}',
+            [App\Http\Controllers\Admin\CriminalController::class, 'update'])
+            ->name('criminals.update');
+        Route::patch('criminals/{criminal}/toggle-wanted',
+            [App\Http\Controllers\Admin\CriminalController::class, 'toggleWanted'])
+            ->name('criminals.toggleWanted');
+
+        // ── Phase 3: Cases — read-only with filters ───────────────────
+        Route::get('cases',
+            [App\Http\Controllers\Admin\CaseController::class, 'index'])
+            ->name('cases.index');
+
+        // ── Phase 3: Complaints — read-only with filters ──────────────
+        Route::get('complaints',
+            [App\Http\Controllers\Admin\ComplaintController::class, 'index'])
+            ->name('complaints.index');
+
+        // ── Phase 4: Analytics ────────────────────────────────────────
+        Route::get('analytics',
+            [App\Http\Controllers\Admin\AnalyticsController::class, 'index'])
+            ->name('analytics');
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -66,14 +109,19 @@ Route::get('/dashboard', function () {
     $user = auth()->user();
     if ($user) {
         if ($user->role === 'super_admin') {
-            return redirect('/admin/dashboard');
+            return redirect()->route('admin.dashboard');
         } elseif ($user->role === 'station_oc') {
-            return redirect('/oc/dashboard');
+            return redirect()->route('oc.dashboard');
         }
     }
-    return redirect('/citizen/my-complaints');
+    return redirect()->route('citizen.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
+/*
+|--------------------------------------------------------------------------
+| 3. AUTHENTICATED PROFILE ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
