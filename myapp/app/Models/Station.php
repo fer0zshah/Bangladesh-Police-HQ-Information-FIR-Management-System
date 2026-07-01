@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Station extends Model
 {
     protected $primaryKey = 'station_id';
-    protected $fillable = ['name', 'district', 'address', 'contact_number'];
+
+    protected $fillable = ['name', 'district', 'address', 'contact_number', 'status'];
 
     public function officers(): HasMany
     {
@@ -18,5 +19,10 @@ class Station extends Model
     public function complaints(): HasMany
     {
         return $this->hasMany(CitizenComplaint::class, 'station_id', 'station_id');
+    }
+
+    public function cases(): HasMany
+    {
+        return $this->hasMany(CaseFir::class, 'station_id', 'station_id');
     }
 }

@@ -60,7 +60,11 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
             ->name('dashboard');
 
         // ── Phase 2: Station CRUD ─────────────────────────────────────
+        Route::patch('stations/{station}/toggle-status',
+            [App\Http\Controllers\Admin\StationController::class, 'toggleStatus'])
+            ->name('stations.toggle-status');
         Route::resource('stations', App\Http\Controllers\Admin\StationController::class)
+            ->except('destroy')
             ->names('stations');
 
         // ── Phase 2: Officer CRUD + OC toggle ────────────────────────
