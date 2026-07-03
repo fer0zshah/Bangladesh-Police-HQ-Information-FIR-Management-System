@@ -1,0 +1,4 @@
+<?php
+namespace App\Http\Controllers\Admin;
+use App\Http\Controllers\Controller;use App\Models\CaseFir;use App\Models\Station;use Illuminate\Http\Request;
+class CaseController extends Controller {public function index(Request $r){$cases=CaseFir::with(['station','officer'])->withCount('criminals')->when($r->filled('search'),fn($q)=>$q->where(fn($q)=>$q->where('case_title','like','%'.$r->search.'%')->orWhere('case_id','like','%'.$r->search.'%')))->when($r->filled('status'),fn($q)=>$q->whereRaw('LOWER(status)=?',[strtolower($r->status)]))->when($r->filled('station_id'),fn($q)=>$q->where('station_id',$r->station_id))->orderByDesc('date_filed')->paginate(15)->withQueryString();foreach($cases as $c){$c->station_name=$c->station?->name;$c->officer_name=$c->officer?->name;}$stations=Station::orderBy('name')->get();$statuses=CaseFir::select('status')->distinct()->orderBy('status')->get();return view('admin.cases',compact('cases','stations','statuses'));}}
