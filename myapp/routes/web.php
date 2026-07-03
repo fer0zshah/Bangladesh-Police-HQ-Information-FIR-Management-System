@@ -35,10 +35,10 @@ Route::middleware(['auth', CheckRole::class.':citizen'])->prefix('citizen')->gro
 });
 
 /*|--------------------------------------------------------------------------
-| STATION OC DASHBOARD (Only 'station_oc' can access)
+| STATION OC DASHBOARD (Only 'officer' can access)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group(function () {
+Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(function () {
     Route::get('/dashboard', function () {
         return view('oc.dashboard');
     })->name('oc.dashboard');
@@ -114,7 +114,7 @@ Route::get('/dashboard', function () {
     if ($user) {
         if ($user->role === 'super_admin') {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'station_oc') {
+        } elseif ($user->role === 'officer') {
             return redirect()->route('oc.dashboard');
         }
     }

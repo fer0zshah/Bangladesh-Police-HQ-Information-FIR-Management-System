@@ -11,10 +11,7 @@ class CheckRole
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     * @param  string  $role
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
@@ -27,11 +24,15 @@ class CheckRole
             $userRole = $request->user()->role;
             if ($userRole === 'super_admin') {
                 return redirect('/admin/dashboard');
-            } elseif ($userRole === 'station_oc') {
+            } elseif ($userRole === 'officer') {
                 return redirect('/oc/dashboard');
             } else {
                 return redirect('/citizen/my-complaints');
             }
+        }
+
+        if ($role === 'officer' && ! $request->user()->officer?->is_oc) {
+            abort(403, 'OC access has not been assigned to this officer account.');
         }
 
         return $next($request);

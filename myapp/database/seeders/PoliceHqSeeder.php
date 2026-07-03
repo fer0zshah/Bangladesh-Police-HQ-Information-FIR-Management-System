@@ -2,17 +2,16 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use App\Models\Station;
-use App\Models\Officer;
+use App\Models\CaseFir;
 use App\Models\CitizenComplaint;
 use App\Models\Criminal;
-use App\Models\CaseFir;
 use App\Models\Evidence;
+use App\Models\Officer;
+use App\Models\Station;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Hash;
 
 class PoliceHqSeeder extends Seeder
 {
@@ -23,14 +22,14 @@ class PoliceHqSeeder extends Seeder
             'name' => 'Dhaka Central Police Station',
             'district' => 'Dhaka',
             'address' => 'Ramna, Dhaka 1000',
-            'contact_number' => '+8801711111111'
+            'contact_number' => '+8801711111111',
         ]);
 
         $ctgPort = Station::create([
             'name' => 'Chittagong Port Police Station',
             'district' => 'Chittagong',
             'address' => 'Port Area, Chittagong 4100',
-            'contact_number' => '+8801722222222'
+            'contact_number' => '+8801722222222',
         ]);
 
         // 2. Seed Officers
@@ -39,7 +38,7 @@ class PoliceHqSeeder extends Seeder
             'name' => 'Inspector Arif Rahman',
             'badge_number' => 'BP-98745',
             'rank' => 'Inspector',
-            'status' => 'Active'
+            'status' => 'Active',
         ]);
 
         $officer2 = Officer::create([
@@ -47,7 +46,7 @@ class PoliceHqSeeder extends Seeder
             'name' => 'Sub-Inspector Fahmida Akter',
             'badge_number' => 'BP-65412',
             'rank' => 'Sub-Inspector',
-            'status' => 'Active'
+            'status' => 'Active',
         ]);
 
         // 3. Seed Criminals
@@ -56,7 +55,7 @@ class PoliceHqSeeder extends Seeder
             'name' => 'Kalam Mia',
             'alias' => 'Kala Jahangir',
             'date_of_birth' => '1985-05-12',
-            'wanted_status' => true
+            'wanted_status' => true,
         ]);
 
         // 4. Seed a Citizen Complaint
@@ -66,7 +65,7 @@ class PoliceHqSeeder extends Seeder
             'complainant_nid' => '2001261948576',
             'description' => 'Armed robbery occurred near Ramna Park at 9:00 PM.',
             'submitted_date' => now()->subDays(2),
-            'status' => 'Escalated'
+            'status' => 'Escalated',
         ]);
 
         // 5. Seed a Case/FIR linked to the complaint and officer
@@ -76,7 +75,7 @@ class PoliceHqSeeder extends Seeder
             'complaint_id' => $complaint->complaint_id,
             'case_title' => 'Ramna Park Armed Robbery',
             'date_filed' => now()->subDay(),
-            'status' => 'Under Investigation'
+            'status' => 'Under Investigation',
         ]);
 
         // 6. Link Criminal to Case via Many-to-Many Bridging Table
@@ -85,7 +84,7 @@ class PoliceHqSeeder extends Seeder
             'criminal_id' => $criminal1->criminal_id,
             'involvement_type' => 'Prime Suspect',
             'created_at' => now(),
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         // 7. Seed Evidence linked to the case
@@ -94,27 +93,30 @@ class PoliceHqSeeder extends Seeder
             'officer_id' => $officer1->officer_id,
             'type' => 'Weapon',
             'description' => 'Local knife recovered from the crime scene.',
-            'collected_date' => now()->subDay()
+            'collected_date' => now()->subDay(),
+        ]);
+
+        $ocUser = User::create([
+            'name' => 'OC Dhaka',
+            'email' => 'oc@dhaka.com',
+            'nid_number' => '9998887776',
+            'phone' => '01711000000',
+            'role' => 'officer',
+            'password' => Hash::make('password'),
+        ]);
+
+        $officer1->update([
+            'user_id' => $ocUser->id,
+            'is_oc' => true,
         ]);
 
         User::create([
-    'name' => 'OC Dhaka',
-    'email' => 'oc@dhaka.com',
-    'nid_number' => '9998887776',
-    'phone' => '01711000000',
-    'role' => 'station_oc',
-    'password' => Hash::make('password'),
-
-]);
-
-       User::create([
-    'name' => 'Admin',
-    'email' => 'admin@hq.com',
-    'nid_number' => '1112223334',
-    'phone' => '01811000000',
-    'role' => 'super_admin',
-    'password' => Hash::make('password'),
-
-]);
+            'name' => 'Admin',
+            'email' => 'admin@hq.com',
+            'nid_number' => '1112223334',
+            'phone' => '01811000000',
+            'role' => 'super_admin',
+            'password' => Hash::make('password'),
+        ]);
     }
 }

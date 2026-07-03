@@ -32,7 +32,7 @@ class AuthenticationTest extends TestCase
 
     public function test_oc_redirected_to_oc_dashboard(): void
     {
-        $user = User::factory()->create(['role' => 'station_oc']);
+        $user = User::factory()->create(['role' => 'officer']);
 
         $response = $this->post('/login', [
             'email' => $user->email,

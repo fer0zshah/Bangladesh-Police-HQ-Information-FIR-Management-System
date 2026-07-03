@@ -3,7 +3,7 @@
         $dashUrl = '/citizen/my-complaints'; // Default
         if (auth()->user()->role === 'super_admin') {
             $dashUrl = '/admin/dashboard';
-        } elseif (auth()->user()->role === 'station_oc') {
+        } elseif (auth()->user()->role === 'officer') {
             $dashUrl = '/oc/dashboard';
         }
     @endphp

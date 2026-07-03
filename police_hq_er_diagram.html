@@ -42,15 +42,27 @@ const diagramSource = `erDiagram
     string district
     string address
     string contact_number
+    string status
+  }
+
+  USER {
+    int id PK
+    string name
+    string email
+    string phone
+    string role
+    string password
   }
 
   OFFICER {
     int officer_id PK
+    int user_id FK
     int station_id FK
     string name
     string badge_number
     string rank
     string status
+    boolean is_oc
   }
 
   CITIZEN_COMPLAINT {
@@ -98,6 +110,7 @@ const diagramSource = `erDiagram
     date collected_date
   }
 
+  USER ||--o| OFFICER : "authenticates"
   STATION ||--o{ OFFICER : "employs"
   STATION ||--o{ CITIZEN_COMPLAINT : "receives"
   STATION ||--o{ CASE_FIR : "registers"
