@@ -1,0 +1,19 @@
+<x-admin-layout pageTitle="Criminal Registry">
+<div class="space-y-6">
+@if(session('success'))<div class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-300">{{session('success')}}</div>@endif
+@if(isset($criminal))
+<section class="mx-auto max-w-3xl rounded-xl border border-hq-700 bg-hq-800 p-6"><h2 class="mb-5 text-lg font-bold text-white">Edit criminal record</h2>
+<form method="POST" action="{{route('admin.criminals.update',$criminal->criminal_id)}}" class="grid gap-4 sm:grid-cols-2">@csrf @method('PATCH')
+<label class="text-sm">Name<input name="name" required value="{{old('name',$criminal->name)}}" class="mt-2 w-full rounded-lg border border-hq-600 bg-hq-900 p-3"></label>
+<label class="text-sm">Alias<input name="alias" value="{{old('alias',$criminal->alias)}}" class="mt-2 w-full rounded-lg border border-hq-600 bg-hq-900 p-3"></label>
+<label class="text-sm">NID<input name="nid_number" value="{{old('nid_number',$criminal->nid_number)}}" class="mt-2 w-full rounded-lg border border-hq-600 bg-hq-900 p-3"></label>
+<label class="text-sm">Date of birth<input type="date" name="date_of_birth" value="{{old('date_of_birth',$criminal->date_of_birth)}}" class="mt-2 w-full rounded-lg border border-hq-600 bg-hq-900 p-3"></label>
+<div class="sm:col-span-2 flex justify-end gap-3"><a href="{{route('admin.criminals.index')}}" class="px-4 py-2">Cancel</a><button class="rounded-lg bg-gold-500 px-5 py-2 font-bold text-hq-900">Save</button></div></form></section>
+@else
+<div class="grid gap-4 sm:grid-cols-2"><div class="rounded-xl border border-hq-700 bg-hq-800 p-5"><p class="text-xs uppercase text-gray-500">Registered</p><p class="mt-2 text-3xl font-bold">{{$summary->total}}</p></div><div class="rounded-xl border border-rose-500/20 bg-hq-800 p-5"><p class="text-xs uppercase text-gray-500">Wanted</p><p class="mt-2 text-3xl font-bold text-rose-400">{{$summary->wanted??0}}</p></div></div>
+<section class="overflow-hidden rounded-xl border border-hq-700 bg-hq-800"><form class="grid gap-3 border-b border-hq-700 p-4 sm:grid-cols-[1fr_12rem_auto]"><input name="search" value="{{request('search')}}" placeholder="Search name, alias or NID" class="rounded-lg border border-hq-600 bg-hq-900 p-3"><select name="wanted" class="rounded-lg border border-hq-600 bg-hq-900 p-3"><option value="">All statuses</option><option value="yes" @selected(request('wanted')==='yes')>Wanted</option><option value="no" @selected(request('wanted')==='no')>Not wanted</option></select><button class="rounded-lg bg-hq-600 px-5 font-bold">Filter</button></form>
+<div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-hq-900/50 text-xs uppercase text-gray-500"><tr><th class="p-4">Person</th><th class="p-4">NID / DOB</th><th class="p-4">Cases</th><th class="p-4">Status</th><th class="p-4"></th></tr></thead><tbody class="divide-y divide-hq-700">@forelse($criminals as $c)<tr><td class="p-4 font-semibold">{{$c->name}}<div class="text-xs text-gray-500">{{$c->alias?:'No alias'}}</div></td><td class="p-4">{{$c->nid_number?:'â€”'}}<div class="text-xs text-gray-500">{{$c->date_of_birth?:'DOB unavailable'}}</div></td><td class="p-4">{{$c->cases_count}}</td><td class="p-4"><span class="{{$c->wanted_status?'text-rose-400':'text-emerald-400'}}">{{$c->wanted_status?'Wanted':'Not wanted'}}</span></td><td class="p-4"><div class="flex gap-2"><a href="{{route('admin.criminals.edit',$c->criminal_id)}}" class="rounded bg-amber-500/10 px-3 py-2 text-amber-400">Edit</a><form method="POST" action="{{route('admin.criminals.toggleWanted',$c->criminal_id)}}">@csrf @method('PATCH')<button class="rounded bg-rose-500/10 px-3 py-2 text-rose-400">Toggle wanted</button></form></div></td></tr>@empty<tr><td colspan="5" class="p-10 text-center text-gray-500">No criminal records found.</td></tr>@endforelse</tbody></table></div><div class="p-4">{{$criminals->links()}}</div></section>
+@endif
+</div></x-admin-layout>
+
+
