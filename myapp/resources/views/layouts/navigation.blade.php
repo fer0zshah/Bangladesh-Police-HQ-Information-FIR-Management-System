@@ -23,6 +23,11 @@
                     <x-nav-link :href="url($dashUrl)" :active="request()->routeIs('dashboard') || request()->is('citizen/my-complaints', 'oc/dashboard', 'admin/dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if(auth()->user()->role === 'officer')
+                        <x-nav-link :href="route('oc.complaints.index')" :active="request()->routeIs('oc.complaints.*')">
+                            {{ __('Complaints') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -78,6 +83,11 @@
             <x-responsive-nav-link :href="url($dashUrl)" :active="request()->routeIs('dashboard') || request()->is('citizen/my-complaints', 'oc/dashboard', 'admin/dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @if(auth()->user()->role === 'officer')
+                <x-responsive-nav-link :href="route('oc.complaints.index')" :active="request()->routeIs('oc.complaints.*')">
+                    {{ __('Complaints') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

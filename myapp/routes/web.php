@@ -39,9 +39,33 @@ Route::middleware(['auth', CheckRole::class.':citizen'])->prefix('citizen')->gro
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('oc.dashboard');
-    })->name('oc.dashboard');
+    Route::get('/dashboard', [App\Http\Controllers\Oc\DashboardController::class, 'index'])
+        ->name('oc.dashboard');
+    Route::get('/complaints', [App\Http\Controllers\Oc\ComplaintController::class, 'index'])
+        ->name('oc.complaints.index');
+    Route::patch('/complaints/{complaint}/status', [App\Http\Controllers\Oc\ComplaintController::class, 'updateStatus'])
+        ->name('oc.complaints.status');
+    Route::post('/complaints/{complaint}/escalate', [App\Http\Controllers\Oc\ComplaintController::class, 'escalate'])
+        ->name('oc.complaints.escalate');
+    Route::get('/cases', [App\Http\Controllers\Oc\CaseController::class, 'index'])->name('oc.cases.index');
+    Route::get('/cases/create', [App\Http\Controllers\Oc\CaseController::class, 'create'])->name('oc.cases.create');
+    Route::post('/cases', [App\Http\Controllers\Oc\CaseController::class, 'store'])->name('oc.cases.store');
+    Route::get('/cases/{case}', [App\Http\Controllers\Oc\CaseController::class, 'show'])->name('oc.cases.show');
+    Route::get('/cases/{case}/edit', [App\Http\Controllers\Oc\CaseController::class, 'edit'])->name('oc.cases.edit');
+    Route::put('/cases/{case}', [App\Http\Controllers\Oc\CaseController::class, 'update'])->name('oc.cases.update');
+    Route::get('/criminals', [App\Http\Controllers\Oc\CriminalController::class, 'index'])->name('oc.criminals.index');
+    Route::get('/criminals/create', [App\Http\Controllers\Oc\CriminalController::class, 'create'])->name('oc.criminals.create');
+    Route::post('/criminals', [App\Http\Controllers\Oc\CriminalController::class, 'store'])->name('oc.criminals.store');
+    Route::get('/criminals/{criminal}', [App\Http\Controllers\Oc\CriminalController::class, 'show'])->name('oc.criminals.show');
+    Route::get('/criminals/{criminal}/edit', [App\Http\Controllers\Oc\CriminalController::class, 'edit'])->name('oc.criminals.edit');
+    Route::put('/criminals/{criminal}', [App\Http\Controllers\Oc\CriminalController::class, 'update'])->name('oc.criminals.update');
+    Route::patch('/criminals/{criminal}/wanted', [App\Http\Controllers\Oc\CriminalController::class, 'toggleWanted'])->name('oc.criminals.wanted');
+    Route::post('/criminals/{criminal}/cases', [App\Http\Controllers\Oc\CriminalController::class, 'linkCase'])->name('oc.criminals.cases');
+    Route::get('/evidence', [App\Http\Controllers\Oc\EvidenceController::class, 'index'])->name('oc.evidence.index');
+    Route::get('/evidence/create', [App\Http\Controllers\Oc\EvidenceController::class, 'create'])->name('oc.evidence.create');
+    Route::post('/evidence', [App\Http\Controllers\Oc\EvidenceController::class, 'store'])->name('oc.evidence.store');
+    Route::get('/evidence/{evidence}/edit', [App\Http\Controllers\Oc\EvidenceController::class, 'edit'])->name('oc.evidence.edit');
+    Route::put('/evidence/{evidence}', [App\Http\Controllers\Oc\EvidenceController::class, 'update'])->name('oc.evidence.update');
 });
 
 /*
