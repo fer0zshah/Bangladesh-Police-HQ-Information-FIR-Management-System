@@ -66,6 +66,7 @@ Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(fu
     Route::post('/evidence', [App\Http\Controllers\Oc\EvidenceController::class, 'store'])->name('oc.evidence.store');
     Route::get('/evidence/{evidence}/edit', [App\Http\Controllers\Oc\EvidenceController::class, 'edit'])->name('oc.evidence.edit');
     Route::put('/evidence/{evidence}', [App\Http\Controllers\Oc\EvidenceController::class, 'update'])->name('oc.evidence.update');
+    Route::get('/officers', [App\Http\Controllers\Oc\OfficerController::class, 'index'])->name('oc.officers.index');
 });
 
 /*

@@ -79,10 +79,10 @@
             </a>
 
             <div class="mb-2 mt-5 px-4 text-[10px] font-bold uppercase tracking-widest text-gray-600">Personnel</div>
-            <div class="flex cursor-not-allowed items-center gap-3 px-4 py-2.5 text-sm text-gray-600" title="Coming in a later phase">
+            <a href="{{ route('oc.officers.index') }}" class="nav-transition flex items-center gap-3 px-4 py-2.5 text-sm {{ request()->routeIs('oc.officers.*') ? 'border-r-2 border-gold-500 bg-hq-700/50 text-gold-500' : 'text-gray-400 hover:bg-hq-700/40 hover:text-white' }}">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20H7v-2a5 5 0 0110 0v2zM15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                Officers <span class="ml-auto text-[8px] uppercase">Soon</span>
-            </div>
+                Officers
+            </a>
 
             <div class="mb-2 mt-5 px-4 text-[10px] font-bold uppercase tracking-widest text-gray-600">Account</div>
             <a href="{{ route('profile.edit') }}" class="nav-transition flex items-center gap-3 px-4 py-2.5 text-sm text-gray-400 hover:bg-hq-700/40 hover:text-white">
@@ -112,4 +112,3 @@
     @stack('scripts')
 </body>
 </html>
-
