@@ -76,7 +76,7 @@
             <div class="card">
                 <h3>Find a Station</h3>
                 <p>Locate the nearest police station in your district, including contact details and OC information.</p>
-                <a href="/stations">Find Stations</a>
+                <a href="{{ route('stations.index') }}">Find Stations</a>
             </div>
 
             <div class="card">

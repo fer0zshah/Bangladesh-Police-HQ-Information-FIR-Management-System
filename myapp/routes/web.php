@@ -15,8 +15,9 @@ Route::get('/', function () {
 });
 
 // Publicly browse stations and individual public profiles
-Route::get('/stations', [StationController::class, 'index']);
-Route::get('/stations/{id}', [StationController::class, 'show']); // Profile with crime stats & public case list
+Route::get('/stations', [StationController::class, 'index'])->name('stations.index');
+Route::get('/stations/{station}', [StationController::class, 'show'])->name('stations.show'); // Profile with crime stats & public case list
+Route::get('/stations/{station}/cases/{case}', [StationController::class, 'caseShow'])->name('stations.cases.show');
 
 // Publicly viewable records (restricted fields hidden in the views)
 Route::get('/public-cases', [StationController::class, 'publicCases']); 
