@@ -203,6 +203,12 @@
                 Criminals
             </a>
 
+            <a href="{{ route('admin.analytics') }}"
+               class="flex items-center gap-3 px-4 py-2.5 text-sm {{ request()->routeIs('admin.analytics') ? 'text-gold-500 bg-hq-700/50 border-r-2 border-gold-500' : 'text-gray-400 hover:text-white hover:bg-hq-700/40' }} transition-all-200">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 16l4-5 4 3 5-7"/></svg>
+                Analytics
+            </a>
+
             <!-- Section: System -->
             <div class="px-4 mt-5 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">System</div>
 
