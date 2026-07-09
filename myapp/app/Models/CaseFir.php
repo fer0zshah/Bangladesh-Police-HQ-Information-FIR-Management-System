@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CaseFir extends Model
 {
@@ -27,5 +28,15 @@ class CaseFir extends Model
         return $this->belongsToMany(Criminal::class, 'case_criminals', 'case_id', 'criminal_id')
                     ->withPivot('involvement_type')
                     ->withTimestamps();
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(CaseAuditLog::class, 'case_id', 'case_id')->latest('audit_log_id');
+    }
+
+    public function evidence(): HasMany
+    {
+        return $this->hasMany(Evidence::class, 'case_id', 'case_id');
     }
 }

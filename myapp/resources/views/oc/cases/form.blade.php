@@ -1,0 +1,18 @@
+<x-oc-layout :pageTitle="$case ? 'Edit FIR #'.$case->case_id : 'Create New FIR'">
+<div class="mx-auto max-w-4xl">
+    @if($errors->any())<div class="mb-5 rounded-xl border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-300"><ul class="list-inside list-disc">@foreach($errors->all() as $error)<li>{{$error}}</li>@endforeach</ul></div>@endif
+    <section class="overflow-hidden rounded-xl border border-hq-700 bg-hq-800 shadow-xl">
+        <header class="border-b border-hq-700 px-6 py-4"><h2 class="font-semibold text-white">{{$case?'Update case details':'Register a direct FIR'}}</h2><p class="mt-1 text-xs text-gray-500">Only officers assigned to your station can investigate this case.</p></header>
+        <form method="POST" action="{{$case?route('oc.cases.update',$case):route('oc.cases.store')}}" class="p-6">@csrf @if($case)@method('PUT')@endif
+            <div class="grid gap-5 sm:grid-cols-2">
+                <label class="text-xs font-semibold text-gray-400 sm:col-span-2">Case title<input name="case_title" required maxlength="255" value="{{old('case_title',$case?->case_title)}}" class="mt-2 h-11 w-full rounded-lg border border-hq-600 bg-hq-900 px-3 text-sm text-white"></label>
+                <label class="text-xs font-semibold text-gray-400">Date filed<input type="date" name="date_filed" required value="{{old('date_filed',$case?->date_filed??now()->toDateString())}}" class="mt-2 h-11 w-full rounded-lg border border-hq-600 bg-hq-900 px-3 text-sm text-white"></label>
+                <label class="text-xs font-semibold text-gray-400">Investigating officer<select name="investigating_officer_id" required class="mt-2 h-11 w-full rounded-lg border border-hq-600 bg-hq-900 px-3 text-sm text-white"><option value="">Select officer</option>@foreach($officers as $officer)<option value="{{$officer->officer_id}}" @selected((string)old('investigating_officer_id',$case?->investigating_officer_id)===(string)$officer->officer_id)>{{$officer->name}} &middot; {{$officer->badge_number}}</option>@endforeach</select></label>
+                @if(!$case)<label class="text-xs font-semibold text-gray-400 sm:col-span-2">Source complaint <span class="font-normal text-gray-600">(optional)</span><select name="complaint_id" class="mt-2 h-11 w-full rounded-lg border border-hq-600 bg-hq-900 px-3 text-sm text-white"><option value="">Direct FIR — no complaint</option>@foreach($complaints as $complaint)<option value="{{$complaint->complaint_id}}" @selected((string)old('complaint_id')===(string)$complaint->complaint_id)>#{{$complaint->complaint_id}} — {{$complaint->complainant_name}}</option>@endforeach</select></label>@endif
+                @if($case)<label class="text-xs font-semibold text-gray-400 sm:col-span-2">Case status<select name="status" required class="mt-2 h-11 w-full rounded-lg border border-hq-600 bg-hq-900 px-3 text-sm text-white">@foreach(['Pending','Under Investigation','Closed','Transferred'] as $status)<option @selected(old('status',$case->status)===$status)>{{$status}}</option>@endforeach</select><span class="mt-2 block text-[10px] text-gray-600">Allowed sequence: Pending → Under Investigation → Closed → Transferred.</span></label>@endif
+            </div>
+            <div class="mt-6 flex justify-end gap-3 border-t border-hq-700 pt-5"><a href="{{$case?route('oc.cases.show',$case):route('oc.cases.index')}}" class="rounded-lg px-5 py-2.5 text-sm text-gray-400 hover:bg-hq-700">Cancel</a><button class="rounded-lg bg-gold-500 px-5 py-2.5 text-sm font-bold text-hq-900 hover:bg-gold-600">{{$case?'Save changes':'Create FIR'}}</button></div>
+        </form>
+    </section>
+</div>
+</x-oc-layout>
