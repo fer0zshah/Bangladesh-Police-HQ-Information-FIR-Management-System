@@ -49,7 +49,7 @@
     <nav>
         <a href="/" class="nav-brand">BD Police HQ Portal</a>
         <div>
-            <a href="{{ route('stations.index') }}">Browse Stations</a>
+            <a href="{{ route('stations.index') }}">Stations</a>
             <a href="/login">Login</a>
         </div>
     </nav>

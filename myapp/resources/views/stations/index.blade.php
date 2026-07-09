@@ -46,7 +46,7 @@
         <a href="/" class="nav-brand">BD Police HQ Portal</a>
         <div class="nav-links">
             <a href="/">Home</a>
-            <a href="/stations">Browse Stations</a>
+            <a href="/stations">Stations</a>
             @guest
                 <a href="/login" class="btn-auth">Login</a>
                 <a href="/register" class="btn-auth">Register</a>
