@@ -33,8 +33,10 @@ class AuthenticatedSessionController extends Controller
         // Redirect based on role hierarchy
         if ($role === 'super_admin') {
             return redirect()->intended('/admin/dashboard');
-        } elseif ($role === 'officer') {
+        } elseif ($role === 'station_oc') {
             return redirect()->intended('/oc/dashboard');
+        } elseif (in_array($role, ['metro_head', 'district_head'], true)) {
+            return redirect()->intended('/stations');
         } else {
             // Default to citizen
             return redirect()->intended('/citizen/my-complaints');

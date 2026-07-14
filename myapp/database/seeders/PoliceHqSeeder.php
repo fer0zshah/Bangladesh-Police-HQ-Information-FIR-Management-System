@@ -17,106 +17,299 @@ class PoliceHqSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Seed Stations
-        $dhakaCentral = Station::create([
-            'name' => 'Dhaka Central Police Station',
-            'district' => 'Dhaka',
-            'address' => 'Ramna, Dhaka 1000',
-            'contact_number' => '+8801711111111',
-        ]);
-
-        $ctgPort = Station::create([
-            'name' => 'Chittagong Port Police Station',
-            'district' => 'Chittagong',
-            'address' => 'Port Area, Chittagong 4100',
-            'contact_number' => '+8801722222222',
-        ]);
-
-        // 2. Seed Officers
-        $officer1 = Officer::create([
-            'station_id' => $dhakaCentral->station_id,
-            'name' => 'Inspector Arif Rahman',
-            'badge_number' => 'BP-98745',
-            'rank' => 'Inspector',
+        $hq = $this->station('Bangladesh Police Headquarters', [
+            'type' => 'hq',
+            'parent_id' => null,
+            'district' => null,
+            'division' => 'Dhaka',
+            'head_rank' => 'IGP',
+            'address' => 'Police Headquarters, Dhaka',
+            'contact_number' => null,
+            'jurisdiction' => 'All of Bangladesh',
             'status' => 'Active',
+            'is_active' => true,
         ]);
 
-        $officer2 = Officer::create([
-            'station_id' => $ctgPort->station_id,
-            'name' => 'Sub-Inspector Fahmida Akter',
-            'badge_number' => 'BP-65412',
-            'rank' => 'Sub-Inspector',
-            'status' => 'Active',
+        $metroHqs = [
+            'Dhaka Metropolitan Police' => [
+                'division' => 'Dhaka',
+                'district' => 'Dhaka',
+                'address' => 'DMP Headquarters, Dhaka',
+                'thanas' => [
+                    'Ramna Model', 'Shahbag', 'Dhanmondi', 'New Market', 'Gulshan',
+                    'Banani', 'Badda', 'Mohammadpur', 'Mirpur Model', 'Pallabi',
+                    'Uttara Model', 'Uttara West', 'Airport', 'Tejgaon', 'Motijheel',
+                    'Paltan Model', 'Wari', 'Lalbag', 'Kotwali', 'Hazaribag',
+                ],
+            ],
+            'Chattogram Metropolitan Police' => [
+                'division' => 'Chattogram',
+                'district' => 'Chattogram',
+                'address' => 'CMP Headquarters, Chattogram',
+                'thanas' => [
+                    'Kotwali', 'Chandgaon', 'Panchlaish', 'Double Mooring', 'Pahartali',
+                    'Bandar', 'Bayezid Bostami', 'Halishahar', 'Karnaphuli', 'Patenga',
+                    'Bakalia', 'Akbar Shah', 'Sadarghat', 'EPZ', 'Chawkbazar', 'Khulshi',
+                ],
+            ],
+            'Khulna Metropolitan Police' => [
+                'division' => 'Khulna',
+                'district' => 'Khulna',
+                'address' => 'KMP Headquarters, Khulna',
+                'thanas' => [
+                    'Khulna Sadar', 'Sonadanga', 'Khalishpur', 'Daulatpur',
+                    'Khan Jahan Ali', 'Labanchara', 'Harintana', 'Aranghata',
+                ],
+            ],
+        ];
+
+        $districtHqs = [
+            'Dhaka District Police' => [
+                'division' => 'Dhaka',
+                'district' => 'Dhaka',
+                'address' => 'Dhaka District Police Office',
+                'thanas' => [
+                    'Dhamrai', 'Savar', 'Ashulia', 'Keraniganj Model',
+                    'Keraniganj South', 'Nawabganj', 'Dohar',
+                ],
+            ],
+            'Narail District Police' => [
+                'division' => 'Khulna',
+                'district' => 'Narail',
+                'address' => 'Narail District Police Office',
+                'thanas' => ['Narail Sadar', 'Lohagara', 'Kalia', 'Naragati'],
+            ],
+            'Khulna District Police' => [
+                'division' => 'Khulna',
+                'district' => 'Khulna',
+                'address' => 'Khulna District Police Office',
+                'thanas' => [
+                    'Rupsha', 'Terokhada', 'Digholia', 'Fultala', 'Dumuria',
+                    'Batiaghata', 'Dacope', 'Paikgacha', 'Koyra',
+                ],
+            ],
+            'Bogura District Police' => [
+                'division' => 'Rajshahi',
+                'district' => 'Bogura',
+                'address' => 'Bogura District Police Office',
+                'thanas' => [
+                    'Bogura Sadar', 'Sherpur', 'Shibganj', 'Gabtali', 'Dhunat',
+                    'Shajahanpur', 'Sonatala', 'Adamdighi', 'Dupchanchia',
+                    'Kahalu', 'Nandigram', 'Sariakandi',
+                ],
+            ],
+            'Nilphamari District Police' => [
+                'division' => 'Rangpur',
+                'district' => 'Nilphamari',
+                'address' => 'Nilphamari District Police Office',
+                'thanas' => ['Nilphamari Sadar', 'Saidpur', 'Jaldhaka', 'Kishoreganj', 'Domar', 'Dimla'],
+            ],
+        ];
+
+        $dhakaMetro = null;
+        $dhakaDistrict = null;
+        $dhanmondiThana = null;
+
+        foreach ($metroHqs as $name => $data) {
+            $metro = $this->station($name, [
+                'type' => 'metropolitanHQ',
+                'parent_id' => $hq->station_id,
+                'district' => $data['district'],
+                'division' => $data['division'],
+                'head_rank' => 'Police Commissioner',
+                'address' => $data['address'],
+                'jurisdiction' => $name,
+                'status' => 'Active',
+                'is_active' => true,
+            ]);
+
+            if ($name === 'Dhaka Metropolitan Police') {
+                $dhakaMetro = $metro;
+            }
+
+            foreach ($data['thanas'] as $thanaName) {
+                $thana = $this->station("{$thanaName} Thana", [
+                    'type' => 'thana',
+                    'parent_id' => $metro->station_id,
+                    'district' => $data['district'],
+                    'division' => $data['division'],
+                    'head_rank' => 'OC',
+                    'address' => "{$thanaName}, {$data['district']}",
+                    'jurisdiction' => "{$thanaName} thana area",
+                    'status' => 'Active',
+                    'is_active' => true,
+                ]);
+
+                if ($thanaName === 'Dhanmondi') {
+                    $dhanmondiThana = $thana;
+                }
+            }
+        }
+
+        foreach ($districtHqs as $name => $data) {
+            $district = $this->station($name, [
+                'type' => 'districtHQ',
+                'parent_id' => $hq->station_id,
+                'district' => $data['district'],
+                'division' => $data['division'],
+                'head_rank' => 'SP',
+                'address' => $data['address'],
+                'jurisdiction' => "{$data['district']} district",
+                'status' => 'Active',
+                'is_active' => true,
+            ]);
+
+            if ($name === 'Dhaka District Police') {
+                $dhakaDistrict = $district;
+            }
+
+            foreach ($data['thanas'] as $thanaName) {
+                $this->station("{$thanaName} Thana", [
+                    'type' => 'thana',
+                    'parent_id' => $district->station_id,
+                    'district' => $data['district'],
+                    'division' => $data['division'],
+                    'head_rank' => 'OC',
+                    'address' => "{$thanaName}, {$data['district']}",
+                    'jurisdiction' => "{$thanaName} thana area",
+                    'status' => 'Active',
+                    'is_active' => true,
+                ]);
+            }
+        }
+
+        $commissioner = $this->officer($dhakaMetro, 'Commissioner Md. Farid Uddin', 'HQ-DMP-001', 'Police Commissioner');
+        $sp = $this->officer($dhakaDistrict, 'SP Nusrat Jahan', 'HQ-DHK-001', 'Superintendent of Police');
+        $oc = $this->officer($dhanmondiThana, 'OC Dhanmondi Inspector Arif Rahman', 'DMP-DHN-001', 'Inspector', true);
+
+        $this->user('igp@police.gov.bd', [
+            'name' => 'Inspector General of Police',
+            'nid_number' => '1000000001',
+            'phone' => '01700000001',
+            'role' => 'super_admin',
+            'station_id' => $hq->station_id,
+            'officer_id' => null,
         ]);
 
-        // 3. Seed Criminals
-        $criminal1 = Criminal::create([
-            'nid_number' => '1995261728394',
-            'name' => 'Kalam Mia',
-            'alias' => 'Kala Jahangir',
-            'date_of_birth' => '1985-05-12',
-            'wanted_status' => true,
+        $this->user('commissioner.dhaka@police.gov.bd', [
+            'name' => $commissioner->name,
+            'nid_number' => '1000000002',
+            'phone' => '01700000002',
+            'role' => 'metro_head',
+            'station_id' => $dhakaMetro->station_id,
+            'officer_id' => $commissioner->officer_id,
         ]);
 
-        // 4. Seed a Citizen Complaint
-        $complaint = CitizenComplaint::create([
-            'station_id' => $dhakaCentral->station_id,
-            'complainant_name' => 'Md. Asif Islam',
-            'complainant_nid' => '2001261948576',
-            'description' => 'Armed robbery occurred near Ramna Park at 9:00 PM.',
-            'submitted_date' => now()->subDays(2),
-            'status' => 'Escalated',
+        $this->user('sp.dhaka@police.gov.bd', [
+            'name' => $sp->name,
+            'nid_number' => '1000000003',
+            'phone' => '01700000003',
+            'role' => 'district_head',
+            'station_id' => $dhakaDistrict->station_id,
+            'officer_id' => $sp->officer_id,
         ]);
 
-        // 5. Seed a Case/FIR linked to the complaint and officer
-        $case = CaseFir::create([
-            'station_id' => $dhakaCentral->station_id,
-            'investigating_officer_id' => $officer1->officer_id,
-            'complaint_id' => $complaint->complaint_id,
-            'case_title' => 'Ramna Park Armed Robbery',
-            'date_filed' => now()->subDay(),
-            'status' => 'Under Investigation',
+        $ocUser = $this->user('oc.dhanmondi@police.gov.bd', [
+            'name' => $oc->name,
+            'nid_number' => '1000000004',
+            'phone' => '01700000004',
+            'role' => 'station_oc',
+            'station_id' => $dhanmondiThana->station_id,
+            'officer_id' => $oc->officer_id,
         ]);
 
-        // 6. Link Criminal to Case via Many-to-Many Bridging Table
-        DB::table('case_criminals')->insert([
-            'case_id' => $case->case_id,
-            'criminal_id' => $criminal1->criminal_id,
-            'involvement_type' => 'Prime Suspect',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        // 7. Seed Evidence linked to the case
-        Evidence::create([
-            'case_id' => $case->case_id,
-            'officer_id' => $officer1->officer_id,
-            'type' => 'Weapon',
-            'description' => 'Local knife recovered from the crime scene.',
-            'collected_date' => now()->subDay(),
-        ]);
-
-        $ocUser = User::create([
-            'name' => 'OC Dhaka',
-            'email' => 'oc@dhaka.com',
-            'nid_number' => '9998887776',
-            'phone' => '01711000000',
-            'role' => 'officer',
-            'password' => Hash::make('password'),
-        ]);
-
-        $officer1->update([
+        $oc->update([
             'user_id' => $ocUser->id,
             'is_oc' => true,
         ]);
 
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@hq.com',
-            'nid_number' => '1112223334',
-            'phone' => '01811000000',
-            'role' => 'super_admin',
-            'password' => Hash::make('password'),
+        $this->user('citizen@test.com', [
+            'name' => 'Test Citizen',
+            'nid_number' => '1000000005',
+            'phone' => '01700000005',
+            'role' => 'citizen',
+            'station_id' => null,
+            'officer_id' => null,
         ]);
+
+        $criminal = Criminal::updateOrCreate(
+            ['nid_number' => '1995261728394'],
+            [
+                'name' => 'Kalam Mia',
+                'alias' => 'Kala Jahangir',
+                'date_of_birth' => '1985-05-12',
+                'wanted_status' => true,
+            ]
+        );
+
+        $complaint = CitizenComplaint::updateOrCreate(
+            ['complainant_nid' => '2001261948576'],
+            [
+                'station_id' => $dhanmondiThana->station_id,
+                'complainant_name' => 'Md. Asif Islam',
+                'description' => 'Armed robbery occurred near Dhanmondi Lake at 9:00 PM.',
+                'submitted_date' => now()->subDays(2)->toDateString(),
+                'status' => 'Escalated',
+            ]
+        );
+
+        $case = CaseFir::updateOrCreate(
+            ['complaint_id' => $complaint->complaint_id],
+            [
+                'station_id' => $dhanmondiThana->station_id,
+                'investigating_officer_id' => $oc->officer_id,
+                'case_title' => 'Dhanmondi Lake Armed Robbery',
+                'date_filed' => now()->subDay()->toDateString(),
+                'status' => 'Under Investigation',
+            ]
+        );
+
+        DB::table('case_criminals')->updateOrInsert(
+            ['case_id' => $case->case_id, 'criminal_id' => $criminal->criminal_id],
+            [
+                'involvement_type' => 'Prime Suspect',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        Evidence::updateOrCreate(
+            ['case_id' => $case->case_id, 'type' => 'Weapon'],
+            [
+                'officer_id' => $oc->officer_id,
+                'description' => 'Local knife recovered from the crime scene.',
+                'collected_date' => now()->subDay()->toDateString(),
+            ]
+        );
+    }
+
+    private function station(string $name, array $attributes): Station
+    {
+        return Station::updateOrCreate(['name' => $name], $attributes);
+    }
+
+    private function officer(Station $station, string $name, string $badgeNumber, string $rank, bool $isOc = false): Officer
+    {
+        return Officer::updateOrCreate(
+            ['badge_number' => $badgeNumber],
+            [
+                'station_id' => $station->station_id,
+                'name' => $name,
+                'rank' => $rank,
+                'status' => 'Active',
+                'is_oc' => $isOc,
+            ]
+        );
+    }
+
+    private function user(string $email, array $attributes): User
+    {
+        return User::updateOrCreate(
+            ['email' => $email],
+            [
+                ...$attributes,
+                'password' => Hash::make('password'),
+            ]
+        );
     }
 }

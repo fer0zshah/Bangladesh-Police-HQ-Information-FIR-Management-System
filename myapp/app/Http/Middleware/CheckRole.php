@@ -22,16 +22,16 @@ class CheckRole
         if ($request->user()->role !== $role) {
             // Friendly redirect to the user's corresponding dashboard if they don't have this role
             $userRole = $request->user()->role;
-            if ($userRole === 'super_admin') {
-                return redirect('/admin/dashboard');
-            } elseif ($userRole === 'officer') {
-                return redirect('/oc/dashboard');
-            } else {
-                return redirect('/citizen/my-complaints');
-            }
+            return match ($userRole) {
+                'super_admin' => redirect('/admin/dashboard'),
+                'station_oc' => redirect('/oc/dashboard'),
+                'citizen' => redirect('/citizen/my-complaints'),
+                'metro_head', 'district_head' => redirect('/stations'),
+                default => redirect('/'),
+            };
         }
 
-        if ($role === 'officer' && ! $request->user()->officer?->is_oc) {
+        if ($role === 'station_oc' && ! $request->user()->officer?->is_oc) {
             abort(403, 'OC access has not been assigned to this officer account.');
         }
 
