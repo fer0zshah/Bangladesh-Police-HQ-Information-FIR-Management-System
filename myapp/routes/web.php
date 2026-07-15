@@ -36,10 +36,10 @@ Route::middleware(['auth', CheckRole::class.':citizen'])->prefix('citizen')->gro
 });
 
 /*|--------------------------------------------------------------------------
-| STATION OC DASHBOARD (Only 'officer' can access)
+| STATION OC DASHBOARD (Only 'station_oc' can access)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(function () {
+Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Oc\DashboardController::class, 'index'])
         ->name('oc.dashboard');
     Route::get('/complaints', [App\Http\Controllers\Oc\ComplaintController::class, 'index'])
@@ -84,6 +84,16 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         // ── Phase 1: Dashboard overview ───────────────────────────────
         Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
             ->name('dashboard');
+
+        Route::get('hq-members',
+            [App\Http\Controllers\Admin\HqMemberController::class, 'index'])
+            ->name('hq-members.index');
+        Route::get('hq-members/ocs/{officer}',
+            [App\Http\Controllers\Admin\HqMemberController::class, 'oc'])
+            ->name('hq-members.ocs.show');
+        Route::get('hq-members/{member}',
+            [App\Http\Controllers\Admin\HqMemberController::class, 'show'])
+            ->name('hq-members.show');
 
         // ── Phase 2: Station CRUD ─────────────────────────────────────
         Route::patch('stations/{station}/toggle-status',
@@ -140,8 +150,10 @@ Route::get('/dashboard', function () {
     if ($user) {
         if ($user->role === 'super_admin') {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'officer') {
+        } elseif ($user->role === 'station_oc') {
             return redirect()->route('oc.dashboard');
+        } elseif (in_array($user->role, ['metro_head', 'district_head'], true)) {
+            return redirect()->route('stations.index');
         }
     }
     return redirect()->route('citizen.dashboard');

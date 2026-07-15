@@ -11,40 +11,38 @@ class StationController extends Controller
 {
     public function index(Request $request): View
     {
-        $stations = Station::query()
-            ->withCount([
-                'cases',
-                'officers' => fn ($query) => $query->whereRaw('LOWER(status) = ?', ['active']),
-            ])
-            ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->string('search')->toString();
+        $search = $request->string('search')->toString();
 
-                $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('district', 'like', "%{$search}%")
-                        ->orWhere('address', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->filled('district'), fn ($query) => $query->where('district', $request->string('district')->toString()))
-            ->whereRaw('LOWER(status) = ?', ['active'])
+        $metroHqs = $this->headquartersQuery('metropolitanHQ', $search)
+            ->orderBy('name')
+            ->get();
+
+        $districtHqs = $this->headquartersQuery('districtHQ', $search)
+            ->orderBy('division')
             ->orderBy('district')
             ->orderBy('name')
-            ->paginate(9)
-            ->withQueryString();
+            ->get();
 
-        $districts = Station::query()
-            ->whereRaw('LOWER(status) = ?', ['active'])
-            ->select('district')
-            ->distinct()
-            ->orderBy('district')
-            ->pluck('district');
-
-        return view('stations.index', compact('stations', 'districts'));
+        return view('stations.index', compact('metroHqs', 'districtHqs'));
     }
 
     public function show(Station $station): View
     {
         abort_unless(strtolower($station->status) === 'active', 404);
+
+        if (in_array($station->type, ['metropolitanHQ', 'districtHQ'], true)) {
+            $thanas = $station->children()
+                ->where('type', 'thana')
+                ->whereRaw('LOWER(status) = ?', ['active'])
+                ->withCount([
+                    'cases',
+                    'officers' => fn ($query) => $query->whereRaw('LOWER(status) = ?', ['active']),
+                ])
+                ->orderBy('name')
+                ->get();
+
+            return view('stations.hq-show', compact('station', 'thanas'));
+        }
 
         $station->loadCount(['cases', 'officers']);
 
@@ -70,6 +68,26 @@ class StationController extends Controller
             ->get(['officer_id', 'name', 'rank']);
 
         return view('stations.show', compact('station', 'stats', 'cases', 'officers'));
+    }
+
+    private function headquartersQuery(string $type, string $search)
+    {
+        return Station::query()
+            ->where('type', $type)
+            ->whereRaw('LOWER(status) = ?', ['active'])
+            ->withCount([
+                'children as thanas_count' => fn ($query) => $query
+                    ->where('type', 'thana')
+                    ->whereRaw('LOWER(status) = ?', ['active']),
+            ])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('district', 'like', "%{$search}%")
+                        ->orWhere('division', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%");
+                });
+            });
     }
 
     public function caseShow(Station $station, CaseFir $case): View

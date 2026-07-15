@@ -49,7 +49,7 @@
             @auth
                 @if(auth()->user()->role === 'super_admin')
                     <a href="/admin/dashboard" class="btn-auth">Go to HQ Dashboard →</a>
-                @elseif(auth()->user()->role === 'officer')
+                @elseif(auth()->user()->role === 'station_oc')
                     <a href="/oc/dashboard" class="btn-auth">Go to OC Dashboard →</a>
                 @else
                     <a href="/citizen/my-complaints" class="btn-auth">My Complaints →</a>

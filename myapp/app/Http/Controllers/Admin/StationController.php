@@ -13,23 +13,64 @@ class StationController extends Controller
     /**
      * Display a listing of stations.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $stations = Station::query()
+        $allStations = Station::query()
             ->withCount(['officers', 'cases'])
             ->latest('station_id')
             ->get();
 
+        $stations = Station::query()
+            ->with(['parent'])
+            ->withCount(['officers', 'cases'])
+            ->when($request->filled('directory_search'), function ($query) use ($request) {
+                $search = $request->string('directory_search')->toString();
+
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('district', 'like', "%{$search}%")
+                        ->orWhere('division', 'like', "%{$search}%")
+                        ->orWhere('contact_number', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->filled('type'), fn ($query) => $query->where('type', $request->string('type')->toString()))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->toString()))
+            ->when($request->filled('parent_id'), fn ($query) => $query->where('parent_id', $request->integer('parent_id')))
+            ->orderByRaw("CASE type WHEN 'hq' THEN 1 WHEN 'metropolitanHQ' THEN 2 WHEN 'districtHQ' THEN 3 WHEN 'thana' THEN 4 ELSE 5 END")
+            ->orderBy('division')
+            ->orderBy('district')
+            ->orderBy('name')
+            ->get();
+
+        $search = $request->string('search')->toString();
+
+        $metroHqs = $this->headquartersQuery('metropolitanHQ', $search)
+            ->orderBy('name')
+            ->get();
+
+        $districtHqs = $this->headquartersQuery('districtHQ', $search)
+            ->orderBy('division')
+            ->orderBy('district')
+            ->orderBy('name')
+            ->get();
+
         $summary = [
-            'total_stations' => $stations->count(),
-            'active_stations' => $stations
+            'total_stations' => $allStations->count(),
+            'active_stations' => $allStations
                 ->filter(fn (Station $station) => strtolower($station->status) === 'active')
                 ->count(),
-            'total_officers' => (int) $stations->sum('officers_count'),
-            'total_cases' => (int) $stations->sum('cases_count'),
+            'total_officers' => (int) $allStations->sum('officers_count'),
+            'total_cases' => (int) $allStations->sum('cases_count'),
         ];
 
-        return view('admin.stations.index', compact('stations', 'summary'));
+        $parentStations = Station::query()
+            ->whereIn('type', ['hq', 'metropolitanHQ', 'districtHQ'])
+            ->orderByRaw("CASE type WHEN 'hq' THEN 1 WHEN 'metropolitanHQ' THEN 2 WHEN 'districtHQ' THEN 3 ELSE 4 END")
+            ->orderBy('name')
+            ->get(['station_id', 'name', 'type']);
+
+        return view('admin.stations.index', compact('stations', 'summary', 'metroHqs', 'districtHqs', 'parentStations'));
     }
 
     /**
@@ -60,6 +101,23 @@ class StationController extends Controller
      */
     public function show(Station $station): View
     {
+        if (in_array($station->type, ['metropolitanHQ', 'districtHQ'], true)) {
+            $thanas = $station->children()
+                ->where('type', 'thana')
+                ->withCount(['officers', 'cases'])
+                ->orderBy('name')
+                ->get();
+
+            $hqSummary = [
+                'thanas' => $thanas->count(),
+                'officers' => (int) $thanas->sum('officers_count'),
+                'cases' => (int) $thanas->sum('cases_count'),
+                'active_thanas' => $thanas->filter(fn (Station $thana) => strtolower($thana->status) === 'active')->count(),
+            ];
+
+            return view('admin.stations.hq-show', compact('station', 'thanas', 'hqSummary'));
+        }
+
         $station->load([
             'officers' => fn ($query) => $query->orderBy('name'),
             'cases' => fn ($query) => $query
@@ -146,5 +204,22 @@ class StationController extends Controller
         }
 
         return $request->validate($rules);
+    }
+
+    private function headquartersQuery(string $type, string $search)
+    {
+        return Station::query()
+            ->where('type', $type)
+            ->withCount([
+                'children as thanas_count' => fn ($query) => $query->where('type', 'thana'),
+            ])
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('district', 'like', "%{$search}%")
+                        ->orWhere('division', 'like', "%{$search}%")
+                        ->orWhere('address', 'like', "%{$search}%");
+                });
+            });
     }
 }
