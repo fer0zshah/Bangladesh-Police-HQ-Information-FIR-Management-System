@@ -30,6 +30,10 @@ Route::get('/public-officers', [OfficerController::class, 'publicList']);
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', CheckRole::class.':citizen'])->prefix('citizen')->group(function () {
+    Route::get('/complaints/create', [App\Http\Controllers\Citizen\ComplaintController::class, 'create'])
+        ->name('citizen.complaints.create');
+    Route::post('/complaints', [App\Http\Controllers\Citizen\ComplaintController::class, 'store'])
+        ->name('citizen.complaints.store');
     Route::get('/my-complaints', function () {
         return view('citizen.dashboard');
     })->name('citizen.dashboard');
@@ -44,6 +48,8 @@ Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group
         ->name('oc.dashboard');
     Route::get('/complaints', [App\Http\Controllers\Oc\ComplaintController::class, 'index'])
         ->name('oc.complaints.index');
+    Route::get('/complaints/{complaint}', [App\Http\Controllers\Oc\ComplaintController::class, 'show'])
+        ->name('oc.complaints.show');
     Route::patch('/complaints/{complaint}/status', [App\Http\Controllers\Oc\ComplaintController::class, 'updateStatus'])
         ->name('oc.complaints.status');
     Route::post('/complaints/{complaint}/escalate', [App\Http\Controllers\Oc\ComplaintController::class, 'escalate'])
@@ -68,7 +74,54 @@ Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group
     Route::get('/evidence/{evidence}/edit', [App\Http\Controllers\Oc\EvidenceController::class, 'edit'])->name('oc.evidence.edit');
     Route::put('/evidence/{evidence}', [App\Http\Controllers\Oc\EvidenceController::class, 'update'])->name('oc.evidence.update');
     Route::get('/officers', [App\Http\Controllers\Oc\OfficerController::class, 'index'])->name('oc.officers.index');
+    Route::get('/officers/{officer}', [App\Http\Controllers\Oc\OfficerController::class, 'show'])->name('oc.officers.show');
 });
+
+/*
+|--------------------------------------------------------------------------
+| COMMISSIONER / DISTRICT SP COMMAND
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', CheckRole::class.':metro_head,district_head'])
+    ->prefix('command')
+    ->name('command.')
+    ->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Command\DashboardController::class, 'index'])
+            ->name('dashboard');
+        Route::get('/stations', [App\Http\Controllers\Command\StationController::class, 'index'])
+            ->name('stations.index');
+        Route::get('/stations/{station}', [App\Http\Controllers\Command\StationController::class, 'show'])
+            ->name('stations.show');
+        Route::resource('officers', App\Http\Controllers\Command\OfficerController::class)
+            ->except(['destroy'])
+            ->names('officers');
+        Route::patch('/officers/{officer}/toggle-oc', [App\Http\Controllers\Command\OfficerController::class, 'toggleOc'])
+            ->name('officers.toggleOc');
+        Route::get('/cases', [App\Http\Controllers\Command\CaseController::class, 'index'])
+            ->name('cases.index');
+        Route::get('/cases/station/{station}', [App\Http\Controllers\Command\CaseController::class, 'station'])
+            ->name('cases.station');
+        Route::get('/cases/{case}', [App\Http\Controllers\Command\CaseController::class, 'show'])
+            ->name('cases.show');
+        Route::get('/complaints', [App\Http\Controllers\Command\ComplaintController::class, 'index'])
+            ->name('complaints.index');
+        Route::get('/complaints/station/{station}', [App\Http\Controllers\Command\ComplaintController::class, 'station'])
+            ->name('complaints.station');
+        Route::get('/complaints/{complaint}', [App\Http\Controllers\Command\ComplaintController::class, 'show'])
+            ->name('complaints.show');
+        Route::get('/criminals', [App\Http\Controllers\Command\CriminalController::class, 'index'])
+            ->name('criminals.index');
+        Route::get('/criminals/station/{station}', [App\Http\Controllers\Command\CriminalController::class, 'station'])
+            ->name('criminals.station');
+        Route::get('/criminals/{criminal}', [App\Http\Controllers\Command\CriminalController::class, 'show'])
+            ->name('criminals.show');
+        Route::get('/evidence', [App\Http\Controllers\Command\EvidenceController::class, 'index'])
+            ->name('evidence.index');
+        Route::get('/evidence/station/{station}', [App\Http\Controllers\Command\EvidenceController::class, 'station'])
+            ->name('evidence.station');
+        Route::get('/analytics', [App\Http\Controllers\Command\AnalyticsController::class, 'index'])
+            ->name('analytics');
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -129,6 +182,9 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         Route::patch('criminals/{criminal}/toggle-wanted',
             [App\Http\Controllers\Admin\CriminalController::class, 'toggleWanted'])
             ->name('criminals.toggleWanted');
+        Route::get('criminals/{criminal}',
+            [App\Http\Controllers\Admin\CriminalController::class, 'show'])
+            ->name('criminals.show');
 
         // ── Phase 3: Cases — read-only with filters ───────────────────
         Route::get('cases',
@@ -140,6 +196,9 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         Route::get('cases/station/{station}',
             [App\Http\Controllers\Admin\CaseController::class, 'station'])
             ->name('cases.station');
+        Route::get('cases/{case}',
+            [App\Http\Controllers\Admin\CaseController::class, 'show'])
+            ->name('cases.show');
 
         // ── Phase 3: Complaints — read-only with filters ──────────────
         Route::get('complaints',
@@ -151,6 +210,9 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         Route::get('complaints/station/{station}',
             [App\Http\Controllers\Admin\ComplaintController::class, 'station'])
             ->name('complaints.station');
+        Route::get('complaints/{complaint}',
+            [App\Http\Controllers\Admin\ComplaintController::class, 'show'])
+            ->name('complaints.show');
 
         // ── Phase 4: Analytics ────────────────────────────────────────
         Route::get('analytics',
@@ -171,7 +233,7 @@ Route::get('/dashboard', function () {
         } elseif ($user->role === 'station_oc') {
             return redirect()->route('oc.dashboard');
         } elseif (in_array($user->role, ['metro_head', 'district_head'], true)) {
-            return redirect()->route('stations.index');
+            return redirect()->route('command.dashboard');
         }
     }
     return redirect()->route('citizen.dashboard');

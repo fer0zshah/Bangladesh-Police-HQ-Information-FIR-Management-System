@@ -22,6 +22,11 @@ class CaseFir extends Model
         return $this->belongsTo(Officer::class, 'investigating_officer_id', 'officer_id');
     }
 
+    public function complaint(): BelongsTo
+    {
+        return $this->belongsTo(CitizenComplaint::class, 'complaint_id', 'complaint_id');
+    }
+
     // Many-to-Many Relationship with Criminals via the bridging table
     public function criminals(): BelongsToMany
     {
