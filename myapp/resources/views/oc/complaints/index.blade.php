@@ -11,7 +11,7 @@
 
             <section class="overflow-hidden rounded-xl border border-[#243447] bg-[#1a252f] shadow-xl shadow-black/10">
                 <form method="GET" class="grid gap-3 border-b border-[#243447] p-4 sm:grid-cols-[1fr_13rem_auto]">
-                    <input name="search" value="{{ request('search') }}" placeholder="Search name, NID or complaint text" class="h-10 rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-white placeholder:text-gray-600 focus:border-blue-500 focus:ring-blue-500">
+                    <input name="search" value="{{ request('search') }}" placeholder="Search title, name, NID or complaint text" class="h-10 rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-white placeholder:text-gray-600 focus:border-blue-500 focus:ring-blue-500">
                     <select name="status" class="h-10 rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-gray-300 focus:border-blue-500 focus:ring-blue-500"><option value="">All statuses</option>@foreach(['Pending','Under Review','Escalated','Dismissed'] as $status)<option value="{{ $status }}" @selected(request('status')===$status)>{{ $status }}</option>@endforeach</select>
                     <button class="rounded-lg bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-500">Filter</button>
                 </form>
@@ -30,8 +30,8 @@
                         <article class="p-5">
                             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold text-white">{{ $complaint->complainant_name }}</h3><span class="rounded-full px-2.5 py-1 text-[10px] font-bold {{ $statusClass }}">{{ $complaint->status }}</span>@if($complaint->caseFir)<span class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-bold text-blue-400">FIR #{{ $complaint->caseFir->case_id }}</span>@endif</div>
-                                    <p class="mt-1 text-[11px] text-gray-600">Complaint #{{ $complaint->complaint_id }} &middot; NID {{ $complaint->complainant_nid }} &middot; {{ date('d M Y', strtotime($complaint->submitted_date)) }}</p>
+                                    <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold text-white">{{ $complaint->complaint_title }}</h3><span class="rounded-full px-2.5 py-1 text-[10px] font-bold {{ $statusClass }}">{{ $complaint->status }}</span>@if($complaint->caseFir)<span class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-bold text-blue-400">FIR #{{ $complaint->caseFir->case_id }}</span>@endif</div>
+                                    <p class="mt-1 text-[11px] text-gray-600">Complaint #{{ $complaint->complaint_id }} &middot; {{ $complaint->complainant_name }} &middot; NID {{ $complaint->complainant_nid }} &middot; {{ date('d M Y', strtotime($complaint->submitted_date)) }}</p>
                                     <p class="mt-3 max-w-3xl text-sm leading-6 text-gray-400">{{ $complaint->description }}</p>
                                 </div>
                                 <div class="flex shrink-0 flex-wrap gap-2">
@@ -47,7 +47,7 @@
                                 <details class="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.04]">
                                     <summary class="cursor-pointer px-4 py-3 text-xs font-semibold text-emerald-400">Escalate and create FIR</summary>
                                     <form method="POST" action="{{ route('oc.complaints.escalate', $complaint) }}" class="grid gap-4 border-t border-emerald-500/10 p-4 md:grid-cols-2">@csrf
-                                        <label class="text-xs font-semibold text-gray-400 md:col-span-2">FIR title<input name="case_title" required maxlength="255" value="{{ old('case_title', 'Complaint #'.$complaint->complaint_id.' - '.$complaint->complainant_name) }}" class="mt-2 h-10 w-full rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500"></label>
+                                        <label class="text-xs font-semibold text-gray-400 md:col-span-2">FIR title<input name="case_title" required maxlength="255" value="{{ old('case_title', $complaint->complaint_title) }}" class="mt-2 h-10 w-full rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500"></label>
                                         <label class="text-xs font-semibold text-gray-400">Investigating officer<select name="investigating_officer_id" required class="mt-2 h-10 w-full rounded-lg border border-[#34495e] bg-[#0f1923] px-3 text-sm text-white focus:border-emerald-500 focus:ring-emerald-500"><option value="">Select officer</option>@foreach($officers as $officer)<option value="{{ $officer->officer_id }}" @selected((string)old('investigating_officer_id')===(string)$officer->officer_id)>{{ $officer->name }} &middot; {{ $officer->badge_number }}</option>@endforeach</select></label>
                                         <div class="flex items-end"><button class="h-10 w-full rounded-lg bg-emerald-600 px-5 text-sm font-bold text-white hover:bg-emerald-500" onclick="return confirm('Escalate this complaint and create an FIR?')">Create FIR</button></div>
                                     </form>
@@ -62,6 +62,5 @@
             </section>
     </div>
 </x-oc-layout>
-
 
 

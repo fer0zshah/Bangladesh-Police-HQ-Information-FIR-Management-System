@@ -25,7 +25,8 @@ class ComplaintController extends Controller
             ->when($request->filled('search'), function ($query) use ($request) {
                 $term = '%'.$request->string('search')->toString().'%';
                 $query->where(fn ($query) => $query
-                    ->where('complainant_name', 'like', $term)
+                    ->where('complaint_title', 'like', $term)
+                    ->orWhere('complainant_name', 'like', $term)
                     ->orWhere('complainant_nid', 'like', $term)
                     ->orWhere('description', 'like', $term));
             })
