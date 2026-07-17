@@ -114,6 +114,12 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         Route::get('criminals',
             [App\Http\Controllers\Admin\CriminalController::class, 'index'])
             ->name('criminals.index');
+        Route::get('criminals/hq/{station}',
+            [App\Http\Controllers\Admin\CriminalController::class, 'hq'])
+            ->name('criminals.hq');
+        Route::get('criminals/station/{station}',
+            [App\Http\Controllers\Admin\CriminalController::class, 'station'])
+            ->name('criminals.station');
         Route::get('criminals/{criminal}/edit',
             [App\Http\Controllers\Admin\CriminalController::class, 'edit'])
             ->name('criminals.edit');

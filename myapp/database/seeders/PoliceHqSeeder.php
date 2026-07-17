@@ -232,6 +232,9 @@ class PoliceHqSeeder extends Seeder
             'officer_id' => null,
         ]);
 
+        $this->seedOfficerTeamsForDictionaryStations();
+        $dhanmondiInspector = $this->seededInvestigatorForCase($dhanmondiThana, 0);
+
         $criminal = Criminal::updateOrCreate(
             ['nid_number' => '1995261728394'],
             [
@@ -257,7 +260,7 @@ class PoliceHqSeeder extends Seeder
             ['complaint_id' => $complaint->complaint_id],
             [
                 'station_id' => $dhanmondiThana->station_id,
-                'investigating_officer_id' => $oc->officer_id,
+                'investigating_officer_id' => $dhanmondiInspector->officer_id,
                 'case_title' => 'Dhanmondi Lake Armed Robbery',
                 'date_filed' => now()->subDay()->toDateString(),
                 'status' => 'Under Investigation',
@@ -276,7 +279,7 @@ class PoliceHqSeeder extends Seeder
         Evidence::updateOrCreate(
             ['case_id' => $case->case_id, 'type' => 'Weapon'],
             [
-                'officer_id' => $oc->officer_id,
+                'officer_id' => $dhanmondiInspector->officer_id,
                 'description' => 'Local knife recovered from the crime scene.',
                 'collected_date' => now()->subDay()->toDateString(),
             ]
@@ -284,6 +287,7 @@ class PoliceHqSeeder extends Seeder
 
         $this->seedFirDictionaryCases();
         $this->seedComplaintDictionaryData();
+        $this->seedCriminalDictionaryLinks();
     }
 
     private function station(string $name, array $attributes): Station
@@ -394,18 +398,9 @@ class PoliceHqSeeder extends Seeder
                 continue;
             }
 
-            $investigator = Officer::firstOrCreate(
-                ['badge_number' => 'INV-'.str_pad((string) $station->station_id, 4, '0', STR_PAD_LEFT)],
-                [
-                    'station_id' => $station->station_id,
-                    'name' => 'Inspector '.$station->name,
-                    'rank' => 'Inspector',
-                    'status' => 'Active',
-                    'is_oc' => false,
-                ]
-            );
+            foreach ($caseRows as $index => [$title, $status, $daysAgo]) {
+                $investigator = $this->seededInvestigatorForCase($station, $index);
 
-            foreach ($caseRows as [$title, $status, $daysAgo]) {
                 CaseFir::updateOrCreate(
                     [
                         'station_id' => $station->station_id,
@@ -420,6 +415,161 @@ class PoliceHqSeeder extends Seeder
                 );
             }
         }
+    }
+
+    private function seedOfficerTeamsForDictionaryStations(): void
+    {
+        foreach ($this->dictionaryOfficerTeams() as $stationName => $team) {
+            $station = Station::where('name', $stationName)->first();
+
+            if (! $station) {
+                continue;
+            }
+
+            $existingOc = Officer::where('station_id', $station->station_id)
+                ->where('is_oc', true)
+                ->first();
+
+            if (! $existingOc) {
+                Officer::updateOrCreate(
+                    ['badge_number' => 'OC-'.str_pad((string) $station->station_id, 4, '0', STR_PAD_LEFT)],
+                    [
+                        'station_id' => $station->station_id,
+                        'name' => $team['oc'],
+                        'rank' => 'Inspector',
+                        'status' => 'Active',
+                        'is_oc' => true,
+                    ]
+                );
+            }
+
+            foreach ($team['inspectors'] as $index => $name) {
+                $badge = $index === 0
+                    ? 'INV-'.str_pad((string) $station->station_id, 4, '0', STR_PAD_LEFT)
+                    : 'INS-'.str_pad((string) $station->station_id, 4, '0', STR_PAD_LEFT).'-'.str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT);
+
+                Officer::updateOrCreate(
+                    ['badge_number' => $badge],
+                    [
+                        'station_id' => $station->station_id,
+                        'name' => $name,
+                        'rank' => 'Inspector',
+                        'status' => 'Active',
+                        'is_oc' => false,
+                    ]
+                );
+            }
+        }
+    }
+
+    private function seededInvestigatorForCase(Station $station, int $caseIndex): Officer
+    {
+        $inspectors = Officer::where('station_id', $station->station_id)
+            ->where('rank', 'Inspector')
+            ->where('is_oc', false)
+            ->where(function ($query) {
+                $query->where('badge_number', 'like', 'INV-%')
+                    ->orWhere('badge_number', 'like', 'INS-%');
+            })
+            ->orderBy('badge_number')
+            ->get()
+            ->values();
+
+        if ($inspectors->isEmpty()) {
+            $this->seedOfficerTeamsForDictionaryStations();
+
+            $inspectors = Officer::where('station_id', $station->station_id)
+                ->where('rank', 'Inspector')
+                ->where('is_oc', false)
+                ->where(function ($query) {
+                    $query->where('badge_number', 'like', 'INV-%')
+                        ->orWhere('badge_number', 'like', 'INS-%');
+                })
+                ->orderBy('badge_number')
+                ->get()
+                ->values();
+        }
+
+        return $inspectors[$caseIndex % max(1, $inspectors->count())]
+            ?? Officer::where('station_id', $station->station_id)->firstOrFail();
+    }
+
+    private function dictionaryOfficerTeams(): array
+    {
+        return [
+            'Ramna Model Thana' => [
+                'oc' => 'OC Ramna Inspector Mahbubur Rahman',
+                'inspectors' => ['Inspector Sayeed Anwar', 'Inspector Farhana Yasmin', 'Inspector Kamrul Ahsan'],
+            ],
+            'Shahbag Thana' => [
+                'oc' => 'OC Shahbag Inspector Rezaul Karim',
+                'inspectors' => ['Inspector Nusrat Jahan', 'Inspector Tareq Masud', 'Inspector Shafiq Alam'],
+            ],
+            'Dhanmondi Thana' => [
+                'oc' => 'OC Dhanmondi Inspector Arif Rahman',
+                'inspectors' => ['Inspector Mahmud Hasan', 'Inspector Sharmin Akter', 'Inspector Rafiq Islam', 'Inspector Ishrat Jahan'],
+            ],
+            'Gulshan Thana' => [
+                'oc' => 'OC Gulshan Inspector Imtiaz Uddin',
+                'inspectors' => ['Inspector Fahim Chowdhury', 'Inspector Lamia Rahman', 'Inspector Omar Faruque'],
+            ],
+            'Kotwali Thana' => [
+                'oc' => 'OC Kotwali Inspector Anwar Hossain',
+                'inspectors' => ['Inspector Pradip Barua', 'Inspector Jamil Ahmed', 'Inspector Rubaiyat Karim'],
+            ],
+            'Panchlaish Thana' => [
+                'oc' => 'OC Panchlaish Inspector S. M. Masud',
+                'inspectors' => ['Inspector Mahfuz Alam', 'Inspector Tahmina Begum', 'Inspector Saiful Islam'],
+            ],
+            'Khulna Sadar Thana' => [
+                'oc' => 'OC Khulna Sadar Inspector Mizanur Rahman',
+                'inspectors' => ['Inspector Biplob Kumar', 'Inspector Ayesha Siddika', 'Inspector Nasir Uddin'],
+            ],
+            'Sonadanga Thana' => [
+                'oc' => 'OC Sonadanga Inspector Shahidul Islam',
+                'inspectors' => ['Inspector Tanvir Hossain', 'Inspector Ruma Khatun', 'Inspector Pritom Saha'],
+            ],
+            'Savar Thana' => [
+                'oc' => 'OC Savar Inspector Deepak Chandra',
+                'inspectors' => ['Inspector Nazmul Haque', 'Inspector Sabrina Sultana', 'Inspector Akram Hossain'],
+            ],
+            'Keraniganj Model Thana' => [
+                'oc' => 'OC Keraniganj Model Inspector Moniruzzaman',
+                'inspectors' => ['Inspector Firoz Ahmed', 'Inspector Mahmuda Islam', 'Inspector Arafat Hossain'],
+            ],
+            'Narail Sadar Thana' => [
+                'oc' => 'OC Narail Sadar Inspector Liton Kumar',
+                'inspectors' => ['Inspector Pijush Biswas', 'Inspector Sabina Yasmin', 'Inspector Hasan Mahmud'],
+            ],
+            'Lohagara Thana' => [
+                'oc' => 'OC Lohagara Inspector Abdul Kader',
+                'inspectors' => ['Inspector Anisur Rahman', 'Inspector Morshed Alam'],
+            ],
+            'Rupsha Thana' => [
+                'oc' => 'OC Rupsha Inspector Goutam Biswas',
+                'inspectors' => ['Inspector Shakil Ahmed', 'Inspector Noorjahan Akter'],
+            ],
+            'Dumuria Thana' => [
+                'oc' => 'OC Dumuria Inspector Emdadul Haque',
+                'inspectors' => ['Inspector Kazi Mamun', 'Inspector Farida Yasmin'],
+            ],
+            'Bogura Sadar Thana' => [
+                'oc' => 'OC Bogura Sadar Inspector Asaduzzaman',
+                'inspectors' => ['Inspector Shahriar Kabir', 'Inspector Roksana Parvin', 'Inspector Al Amin'],
+            ],
+            'Sherpur Thana' => [
+                'oc' => 'OC Sherpur Inspector Abdul Mannan',
+                'inspectors' => ['Inspector Moinul Islam', 'Inspector Sultana Razia'],
+            ],
+            'Nilphamari Sadar Thana' => [
+                'oc' => 'OC Nilphamari Sadar Inspector Hafizur Rahman',
+                'inspectors' => ['Inspector Robiul Islam', 'Inspector Jebun Nahar'],
+            ],
+            'Saidpur Thana' => [
+                'oc' => 'OC Saidpur Inspector Zakir Hossain',
+                'inspectors' => ['Inspector Debashish Roy', 'Inspector Nadira Akter'],
+            ],
+        ];
     }
 
     private function seedComplaintDictionaryData(): void
@@ -512,6 +662,74 @@ class PoliceHqSeeder extends Seeder
                     ]
                 );
             }
+        }
+    }
+
+    private function seedCriminalDictionaryLinks(): void
+    {
+        $names = [
+            ['name' => 'Kamal Hossain', 'alias' => 'Kala Kamal'],
+            ['name' => 'Jahidul Islam', 'alias' => 'Jahid'],
+            ['name' => 'Ratan Mia', 'alias' => 'Ratan'],
+            ['name' => 'Sohag Ahmed', 'alias' => 'Sohag'],
+            ['name' => 'Babul Sheikh', 'alias' => 'Babul'],
+            ['name' => 'Ripon Sarker', 'alias' => 'Ripon'],
+            ['name' => 'Masud Rana', 'alias' => 'Rana'],
+            ['name' => 'Shamim Hossain', 'alias' => 'Shamim'],
+            ['name' => 'Arif Mollah', 'alias' => 'Arif'],
+            ['name' => 'Selim Khan', 'alias' => 'Selim'],
+            ['name' => 'Jalal Uddin', 'alias' => 'Jalal'],
+            ['name' => 'Rubel Hasan', 'alias' => 'Rubel'],
+            ['name' => 'Milon Biswas', 'alias' => 'Milon'],
+            ['name' => 'Nayan Das', 'alias' => 'Nayan'],
+            ['name' => 'Titu Ahmed', 'alias' => 'Titu'],
+            ['name' => 'Kawsar Ali', 'alias' => 'Kawsar'],
+            ['name' => 'Mokbul Hossain', 'alias' => 'Mokbul'],
+            ['name' => 'Helal Uddin', 'alias' => 'Helal'],
+            ['name' => 'Suman Mia', 'alias' => 'Suman'],
+            ['name' => 'Anwarul Karim', 'alias' => 'Anwar'],
+            ['name' => 'Faruq Bepari', 'alias' => 'Faruq'],
+            ['name' => 'Morshed Alam', 'alias' => 'Morshed'],
+            ['name' => 'Rokonuzzaman', 'alias' => 'Rokon'],
+            ['name' => 'Palash Kumar', 'alias' => 'Palash'],
+            ['name' => 'Imran Hossain', 'alias' => 'Imran'],
+            ['name' => 'Sattar Ali', 'alias' => 'Sattar'],
+            ['name' => 'Rafiq Miah', 'alias' => 'Rafiq'],
+            ['name' => 'Jashim Uddin', 'alias' => 'Jashim'],
+            ['name' => 'Shuvo Roy', 'alias' => 'Shuvo'],
+            ['name' => 'Mamun Sheikh', 'alias' => 'Mamun'],
+        ];
+
+        $cases = CaseFir::query()
+            ->whereNotNull('station_id')
+            ->orderBy('case_id')
+            ->get();
+
+        foreach ($cases as $index => $case) {
+            $person = $names[$index % count($names)];
+            $nid = '4'.str_pad((string) (($index + 1) * 7919), 12, '0', STR_PAD_LEFT);
+
+            $criminal = Criminal::updateOrCreate(
+                ['nid_number' => $nid],
+                [
+                    'name' => $person['name'],
+                    'alias' => $person['alias'],
+                    'date_of_birth' => now()->subYears(24 + ($index % 25))->subDays($index * 17)->toDateString(),
+                    'wanted_status' => $index % 3 === 0,
+                ]
+            );
+
+            DB::table('case_criminals')->updateOrInsert(
+                [
+                    'case_id' => $case->case_id,
+                    'criminal_id' => $criminal->criminal_id,
+                ],
+                [
+                    'involvement_type' => ['Prime Suspect', 'Accomplice', 'Person of Interest'][$index % 3],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
     }
 }
