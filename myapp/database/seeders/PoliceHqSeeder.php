@@ -288,6 +288,7 @@ class PoliceHqSeeder extends Seeder
         $this->seedFirDictionaryCases();
         $this->seedComplaintDictionaryData();
         $this->seedCriminalDictionaryLinks();
+        $this->seedEvidenceDictionaryData();
     }
 
     private function station(string $name, array $attributes): Station
@@ -663,6 +664,34 @@ class PoliceHqSeeder extends Seeder
                 );
             }
         }
+    }
+
+    private function seedEvidenceDictionaryData(): void
+    {
+        $evidenceTemplates = [
+            ['Scene Photograph', 'Photographs documenting the scene, entry points, and material positions.'],
+            ['Forensic Sample', 'A sealed forensic sample collected for laboratory examination.'],
+        ];
+
+        CaseFir::query()
+            ->whereHas('station', fn ($query) => $query->where('type', 'thana'))
+            ->whereNotNull('investigating_officer_id')
+            ->get()
+            ->each(function (CaseFir $case) use ($evidenceTemplates): void {
+                foreach ($evidenceTemplates as $offset => [$type, $description]) {
+                    Evidence::updateOrCreate(
+                        ['case_id' => $case->case_id, 'type' => $type],
+                        [
+                            'officer_id' => $case->investigating_officer_id,
+                            'description' => $description,
+                            'collected_date' => \Illuminate\Support\Carbon::parse($case->date_filed)
+                                ->addDays($offset + 1)
+                                ->min(now())
+                                ->toDateString(),
+                        ]
+                    );
+                }
+            });
     }
 
     private function seedCriminalDictionaryLinks(): void

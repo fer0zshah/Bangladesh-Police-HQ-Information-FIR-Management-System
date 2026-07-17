@@ -11,10 +11,12 @@
                     <h2 class="text-2xl font-bold tracking-tight text-white">Officer registry</h2>
                     <p class="mt-2 text-sm leading-6 text-gray-400">Manage personnel records, station assignments, service status, and explicit Officer-in-Charge access.</p>
                 </div>
+                @if($canManageOfficers ?? false)
                 <a href="{{ route('admin.officers.create') }}" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-gold-500 px-5 py-3 text-sm font-bold text-hq-900 shadow-lg shadow-gold-500/10 transition hover:-translate-y-0.5 hover:bg-gold-600 sm:w-auto">
                     <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
                     Add officer
                 </a>
+                @endif
             </div>
         </section>
 
@@ -112,7 +114,7 @@
                             <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500/10 font-bold text-indigo-400">{{ strtoupper(substr($selectedOfficer->name, 0, 1)) }}</div>
                             <div><div class="flex flex-wrap items-center gap-2"><h3 class="text-lg font-bold text-white">{{ $selectedOfficer->name }}</h3>@if ($selectedOfficer->is_oc)<span class="rounded-full border border-gold-500/20 bg-gold-500/10 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-gold-500">Officer in Charge</span>@endif</div><p class="mt-1 text-xs text-gray-500">{{ $selectedOfficer->rank }} · {{ $selectedOfficer->badge_number }}</p></div>
                         </div>
-                        <a href="{{ route('admin.officers.edit', $selectedOfficer) }}" class="inline-flex items-center justify-center rounded-lg border border-hq-600 bg-hq-700 px-4 py-2 text-xs font-semibold text-white hover:bg-hq-600">Edit record</a>
+                        @if($canManageOfficers ?? false)<a href="{{ route('admin.officers.edit', $selectedOfficer) }}" class="inline-flex items-center justify-center rounded-lg border border-hq-600 bg-hq-700 px-4 py-2 text-xs font-semibold text-white hover:bg-hq-600">Edit record</a>@endif
                     </div>
                     <dl class="grid grid-cols-1 divide-y divide-hq-700/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
                         <div class="p-5"><dt class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Station</dt><dd class="mt-2 text-sm text-gray-300">{{ $selectedOfficer->station?->name ?? 'Unassigned' }}</dd></div>
@@ -122,6 +124,7 @@
                     </dl>
                 </div>
 
+                @if($canManageOfficers ?? false)
                 <div class="overflow-hidden rounded-xl border {{ $selectedOfficer->is_oc ? 'border-gold-500/20' : 'border-hq-700' }} bg-hq-800">
                     <div class="border-b border-hq-700 px-5 py-4"><h3 class="text-sm font-semibold text-white">OC account access</h3><p class="mt-1 text-[11px] text-gray-500">Manual admin action only</p></div>
                     @if ($selectedOfficer->is_oc)
@@ -147,6 +150,9 @@
                         </form>
                     @endif
                 </div>
+                @else
+                <div class="rounded-xl border border-hq-700 bg-hq-800 p-5"><h3 class="text-sm font-semibold text-white">Read-only personnel record</h3><p class="mt-2 text-xs leading-5 text-gray-500">Officer appointments and OC access are managed by the responsible Commissioner or District SP.</p></div>
+                @endif
             </section>
         @endif
 

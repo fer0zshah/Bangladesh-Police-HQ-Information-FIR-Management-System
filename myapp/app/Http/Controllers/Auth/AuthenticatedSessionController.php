@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
         } elseif ($role === 'station_oc') {
             return redirect()->intended('/oc/dashboard');
         } elseif (in_array($role, ['metro_head', 'district_head'], true)) {
-            return redirect()->intended('/stations');
+            return redirect()->intended('/command/dashboard');
         } else {
             // Default to citizen
             return redirect()->intended('/citizen/my-complaints');

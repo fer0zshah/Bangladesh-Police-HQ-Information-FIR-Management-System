@@ -44,4 +44,13 @@
             </x-primary-button>
         </div>
     </form>
+
+    @if (Route::has('register'))
+        <div class="mt-6 border-t border-gray-200 pt-5 text-center text-sm text-gray-600">
+            Haven't registered as a citizen?
+            <a href="{{ route('register') }}" class="font-semibold text-indigo-600 underline hover:text-indigo-800">
+                Create an account
+            </a>
+        </div>
+    @endif
 </x-guest-layout>

@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($user) {
                 if ($user->role === 'super_admin') {
                     return '/admin/dashboard';
+                } elseif (in_array($user->role, ['metro_head', 'district_head'], true)) {
+                    return '/command/dashboard';
                 } elseif ($user->role === 'station_oc') {
                     return '/oc/dashboard';
                 }

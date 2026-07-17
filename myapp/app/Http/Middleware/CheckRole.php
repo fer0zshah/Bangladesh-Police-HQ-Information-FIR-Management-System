@@ -13,13 +13,13 @@ class CheckRole
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user()) {
             return redirect()->route('login');
         }
 
-        if ($request->user()->role !== $role) {
+        if (! in_array($request->user()->role, $roles, true)) {
             // Friendly redirect to the user's corresponding dashboard if they don't have this role
             $userRole = $request->user()->role;
             return match ($userRole) {
@@ -31,7 +31,7 @@ class CheckRole
             };
         }
 
-        if ($role === 'station_oc' && ! $request->user()->officer?->is_oc) {
+        if (in_array('station_oc', $roles, true) && ! $request->user()->officer?->is_oc) {
             abort(403, 'OC access has not been assigned to this officer account.');
         }
 

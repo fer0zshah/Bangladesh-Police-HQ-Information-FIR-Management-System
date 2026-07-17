@@ -1,0 +1,14 @@
+<x-command-layout pageTitle="{{ $station->name }}">
+    <div class="mx-auto max-w-[1440px] space-y-6">
+        <div class="flex items-center justify-between"><div><p class="text-xs uppercase tracking-widest text-sky-400">{{ $headquarters->name }}</p><h2 class="mt-2 text-2xl font-bold text-white">{{ $station->name }}</h2><p class="mt-2 text-sm text-gray-500">{{ $station->address }}</p></div><a href="{{ route('command.stations.index') }}" class="rounded-lg border border-hq-600 px-4 py-2 text-xs font-semibold text-gray-400 hover:text-white">Back to stations</a></div>
+        <section class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            @foreach([['Officers',$station->officers_count],['Cases',$station->cases_count],['Active cases',$activeCases],['Complaints',$station->complaints_count]] as $card)
+                <div class="relative overflow-hidden rounded-xl border border-hq-700 bg-hq-800 p-5"><div class="absolute right-0 top-0 h-20 w-20 rounded-bl-full bg-indigo-500/5"></div><p class="text-[10px] font-bold uppercase tracking-widest text-gray-500">{{ $card[0] }}</p><p class="mt-2 text-3xl font-extrabold text-white">{{ number_format($card[1]) }}</p></div>
+            @endforeach
+        </section>
+        <section class="grid gap-6 xl:grid-cols-2">
+            <article class="overflow-hidden rounded-xl border border-hq-700 bg-hq-800"><div class="border-b border-hq-700 px-5 py-4"><h3 class="font-semibold text-white">Officers at this thana</h3></div><div class="divide-y divide-hq-700/60">@forelse($officers as $officer)<a href="{{ route('command.officers.show',$officer) }}" class="flex items-center justify-between px-5 py-4 hover:bg-hq-700/20"><div><p class="font-semibold text-gray-200">{{ $officer->name }}</p><p class="mt-1 text-xs text-gray-500">{{ $officer->rank }} · {{ $officer->badge_number }}</p></div>@if($officer->is_oc)<span class="rounded-full border border-gold-500/20 bg-gold-500/10 px-2 py-1 text-[9px] font-bold uppercase text-gold-500">OC</span>@endif</a>@empty<div class="p-10 text-center text-gray-500">No officers assigned.</div>@endforelse</div></article>
+            <article class="overflow-hidden rounded-xl border border-hq-700 bg-hq-800"><div class="border-b border-hq-700 px-5 py-4"><h3 class="font-semibold text-white">Recent FIRs</h3></div><div class="divide-y divide-hq-700/60">@forelse($recentCases as $case)<div class="px-5 py-4"><div class="flex justify-between gap-4"><p class="font-semibold text-gray-200">{{ $case->case_title }}</p><span class="text-xs text-amber-400">{{ $case->status }}</span></div><p class="mt-1 text-xs text-gray-500">{{ $case->officer?->name ?? 'Unassigned' }}</p></div>@empty<div class="p-10 text-center text-gray-500">No FIRs registered.</div>@endforelse</div></article>
+        </section>
+    </div>
+</x-command-layout>

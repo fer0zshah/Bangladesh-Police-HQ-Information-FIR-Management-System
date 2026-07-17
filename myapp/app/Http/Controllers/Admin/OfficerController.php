@@ -22,11 +22,13 @@ class OfficerController extends Controller
 
     public function create(Request $request): View
     {
+        abort(403, 'Officer appointments are managed by the responsible Commissioner or District SP.');
         return $this->renderPage($request, formMode: 'create');
     }
 
     public function store(Request $request): RedirectResponse
     {
+        abort(403, 'Officer appointments are managed by the responsible Commissioner or District SP.');
         $officer = Officer::create($this->validatedOfficer($request));
 
         return redirect()
@@ -43,6 +45,7 @@ class OfficerController extends Controller
 
     public function edit(Request $request, Officer $officer): View
     {
+        abort(403, 'Officer records are managed by the responsible Commissioner or District SP.');
         $officer->load(['station', 'user']);
 
         return $this->renderPage($request, formMode: 'edit', editingOfficer: $officer);
@@ -50,6 +53,7 @@ class OfficerController extends Controller
 
     public function update(Request $request, Officer $officer): RedirectResponse
     {
+        abort(403, 'Officer records are managed by the responsible Commissioner or District SP.');
         $data = $this->validatedOfficer($request, $officer);
         $this->guardOcAssignment($officer, $data);
 
@@ -68,6 +72,7 @@ class OfficerController extends Controller
 
     public function destroy(Officer $officer): RedirectResponse
     {
+        abort(403, 'Officer records are managed by the responsible Commissioner or District SP.');
         if ($officer->is_oc) {
             return back()->with('error', 'Remove OC access before deleting this officer.');
         }
@@ -88,6 +93,7 @@ class OfficerController extends Controller
 
     public function toggleOc(Request $request, Officer $officer): RedirectResponse
     {
+        abort(403, 'OC appointments are managed by the responsible Commissioner or District SP.');
         if ($officer->is_oc) {
             return $this->removeOcAccess($officer);
         }
@@ -223,6 +229,7 @@ class OfficerController extends Controller
             'oc' => Officer::where('is_oc', true)->count(),
             'unassigned' => Officer::whereNull('station_id')->count(),
         ];
+        $canManageOfficers = false;
 
         return view('admin.officers', compact(
             'officers',
@@ -231,6 +238,7 @@ class OfficerController extends Controller
             'formMode',
             'editingOfficer',
             'selectedOfficer',
+            'canManageOfficers',
         ));
     }
 

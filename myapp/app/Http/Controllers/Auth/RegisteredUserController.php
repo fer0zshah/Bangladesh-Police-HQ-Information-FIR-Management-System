@@ -56,6 +56,6 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // 4. Redirect them to the dashboard
-        return redirect('/citizen/my-complaints');
+        return redirect()->intended('/citizen/my-complaints');
     }
 }

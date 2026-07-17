@@ -82,7 +82,7 @@
             <div class="card">
                 <h3>File a Complaint</h3>
                 <p>Registered citizens can securely submit preliminary complaints directly to their local station.</p>
-                <a href="/citizen/my-complaints">Submit Complaint</a>
+                <a href="{{ route('citizen.complaints.create') }}">Submit Complaint</a>
             </div>
         </div>
     </div>
