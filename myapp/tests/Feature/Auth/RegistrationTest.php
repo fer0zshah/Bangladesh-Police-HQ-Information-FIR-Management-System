@@ -28,6 +28,6 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect('/citizen/my-complaints');
+        $response->assertRedirect('/');
     }
 }

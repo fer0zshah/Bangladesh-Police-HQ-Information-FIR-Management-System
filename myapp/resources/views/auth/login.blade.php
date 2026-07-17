@@ -43,5 +43,17 @@
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
+
+        @if (Route::has('register'))
+            <div class="mt-6 border-t border-gray-200 pt-5 text-center">
+                <p class="text-sm text-gray-600">
+                    {{ __("Don't have a citizen account?") }}
+                    <a href="{{ route('register') }}"
+                       class="ml-1 font-semibold text-indigo-600 underline decoration-indigo-300 underline-offset-4 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        {{ __('Register here') }}
+                    </a>
+                </p>
+            </div>
+        @endif
     </form>
 </x-guest-layout>
