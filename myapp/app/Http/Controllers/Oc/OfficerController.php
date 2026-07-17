@@ -52,6 +52,22 @@ class OfficerController extends Controller
         ]);
     }
 
+    public function show(Officer $officer): View
+    {
+        $oc = $this->oc();
+        abort_unless((int) $officer->station_id === (int) $oc->station_id, 404);
+        $officer->load(['station', 'cases', 'evidence.case']);
+
+        return view('records.show', [
+            'layout'=>'oc-layout','pageTitle'=>$officer->name,'type'=>'officer',
+            'record'=>(object)['officer_id'=>$officer->officer_id,'name'=>$officer->name,'rank'=>$officer->rank,'badge_number'=>$officer->badge_number,'status'=>$officer->status,'is_oc'=>$officer->is_oc,'station_name'=>$officer->station?->name],
+            'relatedCases'=>$officer->cases->map(fn($case)=>(object)['case_id'=>$case->case_id,'case_title'=>$case->case_title,'status'=>$case->status,'date_filed'=>$case->date_filed]),
+            'evidence'=>$officer->evidence->map(fn($item)=>(object)['type'=>$item->type,'case_id'=>$item->case_id,'collected_date'=>$item->collected_date]),
+            'criminals'=>collect(),'auditLogs'=>collect(),'linkedCase'=>null,
+            'backUrl'=>route('oc.officers.index'),'backLabel'=>'Back to station officers','editUrl'=>null,
+        ]);
+    }
+
     private function oc(): Officer
     {
         $oc = Officer::with('station')

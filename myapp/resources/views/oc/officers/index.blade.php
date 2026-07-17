@@ -61,7 +61,7 @@
                                 <div class="flex items-center gap-3">
                                     <div class="flex h-10 w-10 items-center justify-center rounded-full border border-hq-600 bg-hq-700 text-sm font-bold text-gray-300">{{ strtoupper(substr($officer->name, 0, 1)) }}</div>
                                     <div>
-                                        <p class="font-semibold text-gray-100">{{ $officer->name }}</p>
+                                        <a href="{{ route('oc.officers.show', $officer) }}" class="font-semibold text-gray-100 hover:text-gold-500">{{ $officer->name }}</a>
                                         <p class="mt-0.5 text-[10px] text-gray-600">{{ $officer->badge_number }}</p>
                                     </div>
                                     @if($officer->is_oc)

@@ -52,6 +52,21 @@ class ComplaintController extends Controller
         return view('oc.complaints.index', compact('oc', 'complaints', 'summary', 'officers'));
     }
 
+    public function show(CitizenComplaint $complaint): View
+    {
+        $this->guardStation($complaint);
+        $complaint->load(['station.parent', 'caseFir.officer']);
+        $linked = $complaint->caseFir;
+
+        return view('records.show', [
+            'layout'=>'oc-layout','pageTitle'=>'Complaint #'.$complaint->complaint_id,'type'=>'complaint',
+            'record'=>(object)['complaint_id'=>$complaint->complaint_id,'complainant_name'=>$complaint->complainant_name,'complainant_nid'=>$complaint->complainant_nid,'description'=>$complaint->description,'submitted_date'=>$complaint->submitted_date,'status'=>$complaint->status,'station_name'=>$complaint->station?->name,'command_name'=>$complaint->station?->parent?->name],
+            'linkedCase'=>$linked?(object)['case_id'=>$linked->case_id,'case_title'=>$linked->case_title,'officer_name'=>$linked->officer?->name,'status'=>$linked->status]:null,
+            'criminals'=>collect(),'evidence'=>collect(),'auditLogs'=>collect(),'relatedCases'=>collect(),
+            'backUrl'=>route('oc.complaints.index'),'backLabel'=>'Back to complaints','editUrl'=>null,
+        ]);
+    }
+
     public function updateStatus(Request $request, CitizenComplaint $complaint): RedirectResponse
     {
         $this->guardStation($complaint);

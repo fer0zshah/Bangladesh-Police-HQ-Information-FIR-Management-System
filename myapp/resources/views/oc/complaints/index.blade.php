@@ -30,7 +30,7 @@
                         <article class="p-5">
                             <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                                 <div class="min-w-0 flex-1">
-                                    <div class="flex flex-wrap items-center gap-2"><h3 class="font-semibold text-white">{{ $complaint->complainant_name }}</h3><span class="rounded-full px-2.5 py-1 text-[10px] font-bold {{ $statusClass }}">{{ $complaint->status }}</span>@if($complaint->caseFir)<span class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-bold text-blue-400">FIR #{{ $complaint->caseFir->case_id }}</span>@endif</div>
+                                    <div class="flex flex-wrap items-center gap-2"><a href="{{ route('oc.complaints.show', $complaint) }}" class="font-semibold text-white hover:text-gold-500">{{ $complaint->complainant_name }}</a><span class="rounded-full px-2.5 py-1 text-[10px] font-bold {{ $statusClass }}">{{ $complaint->status }}</span>@if($complaint->caseFir)<a href="{{ route('oc.cases.show', $complaint->caseFir) }}" class="rounded-full bg-blue-500/10 px-2.5 py-1 text-[10px] font-bold text-blue-400">FIR #{{ $complaint->caseFir->case_id }}</a>@endif</div>
                                     <p class="mt-1 text-[11px] text-gray-600">Complaint #{{ $complaint->complaint_id }} &middot; NID {{ $complaint->complainant_nid }} &middot; {{ date('d M Y', strtotime($complaint->submitted_date)) }}</p>
                                     <p class="mt-3 max-w-3xl text-sm leading-6 text-gray-400">{{ $complaint->description }}</p>
                                 </div>
@@ -62,6 +62,5 @@
             </section>
     </div>
 </x-oc-layout>
-
 
 
