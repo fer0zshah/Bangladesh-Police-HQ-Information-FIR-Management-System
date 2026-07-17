@@ -11,6 +11,28 @@ use Illuminate\View\View;
 
 class ComplaintController extends Controller
 {
+    public function show(CitizenComplaint $complaint): View
+    {
+        $complaint->load(['station.parent', 'caseFir.officer']);
+        $linked = $complaint->caseFir;
+
+        return view('records.show', [
+            'layout' => 'admin-layout', 'pageTitle' => 'Complaint #'.$complaint->complaint_id,
+            'type' => 'complaint', 'record' => (object) [
+                'complaint_id' => $complaint->complaint_id, 'complainant_name' => $complaint->complainant_name,
+                'complainant_nid' => $complaint->complainant_nid, 'description' => $complaint->description,
+                'submitted_date' => $complaint->submitted_date, 'status' => $complaint->status,
+                'station_name' => $complaint->station?->name, 'command_name' => $complaint->station?->parent?->name,
+            ],
+            'linkedCase' => $linked ? (object) [
+                'case_id' => $linked->case_id, 'case_title' => $linked->case_title,
+                'officer_name' => $linked->officer?->name, 'status' => $linked->status,
+            ] : null,
+            'criminals' => collect(), 'evidence' => collect(), 'auditLogs' => collect(), 'relatedCases' => collect(),
+            'backUrl' => route('admin.complaints.index'), 'backLabel' => 'Back to complaint directory', 'editUrl' => null,
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $allComplaints = CitizenComplaint::query()->get(['complaint_id', 'status']);

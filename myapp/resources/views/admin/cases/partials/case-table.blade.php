@@ -55,7 +55,7 @@
                             <div class="flex items-center gap-4">
                                 <div class="flex h-10 w-10 flex-none items-center justify-center rounded-lg border border-hq-600 bg-hq-900 font-mono text-xs font-bold text-hq-300">#{{ $case->case_id }}</div>
                                 <div>
-                                    <p class="font-semibold text-gray-200">{{ $case->case_title }}</p>
+                                    <a href="{{ route('admin.cases.show', $case) }}" class="font-semibold text-gray-200 transition hover:text-gold-500">{{ $case->case_title }}</a>
                                     <p class="mt-0.5 text-xs text-gray-500">FIR reference #{{ $case->case_id }}</p>
                                 </div>
                             </div>

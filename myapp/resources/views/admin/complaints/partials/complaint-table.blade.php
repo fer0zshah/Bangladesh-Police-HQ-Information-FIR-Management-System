@@ -54,7 +54,7 @@
                             <div class="flex items-center gap-4">
                                 <div class="flex h-10 w-10 flex-none items-center justify-center rounded-lg border border-hq-600 bg-hq-900 font-mono text-xs font-bold text-hq-300">#{{ $complaint->complaint_id }}</div>
                                 <div>
-                                    <p class="font-semibold text-gray-200">{{ $complaint->complainant_name }}</p>
+                                    <a href="{{ route('admin.complaints.show', $complaint) }}" class="font-semibold text-gray-200 transition hover:text-gold-500">{{ $complaint->complainant_name }}</a>
                                     <p class="mt-0.5 text-xs text-gray-500">NID {{ $complaint->complainant_nid }}</p>
                                 </div>
                             </div>
@@ -71,7 +71,7 @@
                         <td class="px-4 py-4 text-gray-500">{{ $complaint->submitted_date ? \Carbon\Carbon::parse($complaint->submitted_date)->format('d M Y') : 'N/A' }}</td>
                         <td class="px-4 py-4">
                             @if($complaint->caseFir)
-                                <span class="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">FIR #{{ $complaint->caseFir->case_id }}</span>
+                                <a href="{{ route('admin.cases.show', $complaint->caseFir) }}" class="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400">FIR #{{ $complaint->caseFir->case_id }}</a>
                             @else
                                 <span class="text-xs text-gray-600">Not linked</span>
                             @endif

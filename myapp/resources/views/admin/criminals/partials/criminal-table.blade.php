@@ -40,7 +40,7 @@
                 @foreach ($criminals as $criminal)
                     @php($latestCase = $criminal->cases->first())
                     <tr class="text-gray-400 transition-colors hover:bg-hq-700/20 hover:text-gray-200">
-                        <td class="px-5 py-4"><p class="font-semibold text-gray-200">{{ $criminal->name }}</p><p class="mt-0.5 text-xs text-gray-500">{{ $criminal->alias ?: 'No alias' }}</p></td>
+                        <td class="px-5 py-4"><a href="{{ route('admin.criminals.show', $criminal) }}" class="font-semibold text-gray-200 transition hover:text-gold-500">{{ $criminal->name }}</a><p class="mt-0.5 text-xs text-gray-500">{{ $criminal->alias ?: 'No alias' }}</p></td>
                         <td class="px-4 py-4">{{ $criminal->nid_number ?: '—' }}<div class="text-xs text-gray-500">{{ $criminal->date_of_birth ?: 'DOB unavailable' }}</div></td>
                         @if($showStation ?? false)
                             <td class="px-4 py-4">
@@ -57,6 +57,7 @@
                         <td class="px-4 py-4"><span class="{{ $criminal->wanted_status ? 'text-rose-400' : 'text-emerald-400' }}">{{ $criminal->wanted_status ? 'Wanted' : 'Not wanted' }}</span></td>
                         <td class="px-5 py-4 text-right">
                             <div class="inline-flex gap-2">
+                                <a href="{{ route('admin.criminals.show', $criminal) }}" class="rounded-md border border-sky-500/30 bg-transparent px-3 py-1.5 text-xs font-semibold text-sky-400 transition hover:bg-sky-500/10">View</a>
                                 <a href="{{ route('admin.criminals.edit', $criminal->criminal_id) }}" class="rounded-md border border-amber-500/30 bg-transparent px-3 py-1.5 text-xs font-semibold text-amber-400 transition hover:bg-amber-500/10">Edit</a>
                                 <form method="POST" action="{{ route('admin.criminals.toggleWanted', $criminal->criminal_id) }}">@csrf @method('PATCH')<button class="rounded-md border border-rose-500/30 bg-transparent px-3 py-1.5 text-xs font-semibold text-rose-400 transition hover:bg-rose-500/10">Toggle wanted</button></form>
                             </div>

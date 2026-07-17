@@ -11,6 +11,36 @@ use Illuminate\View\View;
 
 class CaseController extends Controller
 {
+    public function show(CaseFir $case): View
+    {
+        $case->load(['station.parent', 'officer', 'complaint', 'criminals', 'evidence.officer', 'auditLogs.user']);
+
+        return view('records.show', [
+            'layout' => 'admin-layout',
+            'pageTitle' => 'FIR #'.$case->case_id,
+            'type' => 'case',
+            'record' => $this->caseRecord($case),
+            'criminals' => $case->criminals->map(fn ($criminal) => (object) [
+                'name' => $criminal->name,
+                'alias' => $criminal->alias,
+                'involvement_type' => $criminal->pivot->involvement_type,
+            ]),
+            'evidence' => $case->evidence->map(fn ($item) => (object) [
+                'type' => $item->type, 'description' => $item->description,
+                'collected_date' => $item->collected_date, 'officer_name' => $item->officer?->name,
+            ]),
+            'auditLogs' => $case->auditLogs->map(fn ($log) => (object) [
+                'action' => $log->action, 'old_status' => $log->old_status, 'new_status' => $log->new_status,
+                'details' => $log->details, 'created_at' => $log->created_at, 'user_name' => $log->user?->name,
+            ]),
+            'relatedCases' => collect(),
+            'linkedCase' => null,
+            'backUrl' => route('admin.cases.index'),
+            'backLabel' => 'Back to FIR directory',
+            'editUrl' => null,
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $allCases = CaseFir::query()->get(['case_id', 'status']);
@@ -128,6 +158,16 @@ class CaseController extends Controller
             ->when($request->filled('station_id'), fn ($query) => $query->where('station_id', $request->integer('station_id')))
             ->latest('date_filed')
             ->latest('case_id');
+    }
+
+    private function caseRecord(CaseFir $case): object
+    {
+        return (object) [
+            'case_id' => $case->case_id, 'case_title' => $case->case_title,
+            'status' => $case->status, 'date_filed' => $case->date_filed,
+            'station_name' => $case->station?->name, 'command_name' => $case->station?->parent?->name,
+            'officer_name' => $case->officer?->name, 'complaint_id' => $case->complaint_id,
+        ];
     }
 
     private function headquarters(string $type, string $search)

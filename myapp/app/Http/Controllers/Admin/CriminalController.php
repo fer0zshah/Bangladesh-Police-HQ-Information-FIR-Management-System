@@ -11,6 +11,24 @@ use Illuminate\View\View;
 
 class CriminalController extends Controller
 {
+    public function show(Criminal $criminal): View
+    {
+        $criminal->load(['cases' => fn ($query) => $query->with(['station', 'officer'])->latest('date_filed')]);
+
+        return view('records.show', [
+            'layout' => 'admin-layout', 'pageTitle' => $criminal->name, 'type' => 'criminal',
+            'record' => $criminal,
+            'relatedCases' => $criminal->cases->map(fn ($case) => (object) [
+                'case_id' => $case->case_id, 'case_title' => $case->case_title,
+                'station_name' => $case->station?->name, 'involvement_type' => $case->pivot->involvement_type,
+                'officer_name' => $case->officer?->name, 'date_filed' => $case->date_filed, 'status' => $case->status,
+            ]),
+            'criminals' => collect(), 'evidence' => collect(), 'auditLogs' => collect(), 'linkedCase' => null,
+            'backUrl' => route('admin.criminals.index'), 'backLabel' => 'Back to criminal directory',
+            'editUrl' => route('admin.criminals.edit', $criminal),
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $search = $request->string('search')->toString();
