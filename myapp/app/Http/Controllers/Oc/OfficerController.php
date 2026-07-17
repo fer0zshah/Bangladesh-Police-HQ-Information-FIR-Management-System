@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Oc;
 
 use App\Http\Controllers\Controller;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class OfficerController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(Request $request): View
     {
         $oc = $this->oc();
@@ -51,9 +54,13 @@ class OfficerController extends Controller
 
     private function oc(): Officer
     {
-        return Officer::with('station')
+        $oc = Officer::with('station')
             ->where('user_id', auth()->id())
             ->where('is_oc', true)
             ->firstOrFail();
+
+        $this->ensureStationInJurisdiction($oc->station_id);
+
+        return $oc;
     }
 }

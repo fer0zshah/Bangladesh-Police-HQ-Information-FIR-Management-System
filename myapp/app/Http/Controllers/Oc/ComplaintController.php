@@ -7,6 +7,7 @@ use App\Models\CitizenComplaint;
 use App\Models\CaseAuditLog;
 use App\Models\CaseFir;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,8 @@ use Illuminate\View\View;
 
 class ComplaintController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(Request $request): View
     {
         $oc = $this->oc();
@@ -103,7 +106,10 @@ class ComplaintController extends Controller
 
     private function oc(): Officer
     {
-        return Officer::where('user_id', auth()->id())->where('is_oc', true)->firstOrFail();
+        $oc = Officer::where('user_id', auth()->id())->where('is_oc', true)->firstOrFail();
+        $this->ensureStationInJurisdiction($oc->station_id);
+
+        return $oc;
     }
 
     private function guardStation(CitizenComplaint $complaint): Officer

@@ -7,6 +7,7 @@ use App\Models\CaseAuditLog;
 use App\Models\CaseFir;
 use App\Models\Evidence;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class EvidenceController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(Request $request): View
     {
         $oc=$this->oc();
@@ -55,7 +58,7 @@ class EvidenceController extends Controller
     {
         return $request->validate(['case_id'=>['required','integer',Rule::exists('case_firs','case_id')->where(fn($q)=>$q->where('station_id',$oc->station_id))],'officer_id'=>['required','integer',Rule::exists('officers','officer_id')->where(fn($q)=>$q->where('station_id',$oc->station_id))],'type'=>'required|string|max:100','description'=>'nullable|string|max:2000','collected_date'=>'required|date']);
     }
-    private function oc(): Officer{return Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();}
+    private function oc(): Officer{$oc=Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();$this->ensureStationInJurisdiction($oc->station_id);return $oc;}
     private function guard(Evidence $evidence): Officer{$oc=$this->oc();$evidence->loadMissing('case');abort_unless((int)$evidence->case->station_id===(int)$oc->station_id,403);return $oc;}
     private function cases(Officer $oc){return CaseFir::where('station_id',$oc->station_id)->orderByDesc('date_filed')->get();}
     private function officers(Officer $oc){return Officer::where('station_id',$oc->station_id)->whereRaw("LOWER(status)='active'")->orderBy('name')->get();}

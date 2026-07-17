@@ -3,8 +3,10 @@
         $dashUrl = '/citizen/my-complaints'; // Default
         if (auth()->user()->role === 'super_admin') {
             $dashUrl = '/admin/dashboard';
-        } elseif (auth()->user()->role === 'officer') {
+        } elseif (auth()->user()->role === 'station_oc') {
             $dashUrl = '/oc/dashboard';
+        } elseif (in_array(auth()->user()->role, ['metro_head', 'district_head'], true)) {
+            $dashUrl = '/stations';
         }
     @endphp
     <!-- Primary Navigation Menu -->
@@ -23,7 +25,7 @@
                     <x-nav-link :href="url($dashUrl)" :active="request()->routeIs('dashboard') || request()->is('citizen/my-complaints', 'oc/dashboard', 'admin/dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if(auth()->user()->role === 'officer')
+                    @if(auth()->user()->role === 'station_oc')
                         <x-nav-link :href="route('oc.complaints.index')" :active="request()->routeIs('oc.complaints.*')">
                             {{ __('Complaints') }}
                         </x-nav-link>
@@ -83,7 +85,7 @@
             <x-responsive-nav-link :href="url($dashUrl)" :active="request()->routeIs('dashboard') || request()->is('citizen/my-complaints', 'oc/dashboard', 'admin/dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if(auth()->user()->role === 'officer')
+            @if(auth()->user()->role === 'station_oc')
                 <x-responsive-nav-link :href="route('oc.complaints.index')" :active="request()->routeIs('oc.complaints.*')">
                     {{ __('Complaints') }}
                 </x-responsive-nav-link>

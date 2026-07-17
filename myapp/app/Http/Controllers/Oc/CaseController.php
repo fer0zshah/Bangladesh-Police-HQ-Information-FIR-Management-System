@@ -7,6 +7,7 @@ use App\Models\CaseAuditLog;
 use App\Models\CaseFir;
 use App\Models\CitizenComplaint;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,8 @@ use Illuminate\View\View;
 
 class CaseController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(Request $request): View
     {
         $oc=$this->oc();
@@ -80,7 +83,7 @@ class CaseController extends Controller
         return $request->validate($rules);
     }
 
-    private function oc(): Officer{return Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();}
+    private function oc(): Officer{$oc=Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();$this->ensureStationInJurisdiction($oc->station_id);return $oc;}
     private function guard(CaseFir $case): Officer{$oc=$this->oc();abort_unless((int)$case->station_id===(int)$oc->station_id,403);return $oc;}
     private function officers(Officer $oc){return Officer::where('station_id',$oc->station_id)->whereRaw("LOWER(status)='active'")->orderBy('name')->get();}
     private function complaints(Officer $oc,?CaseFir $case=null){return CitizenComplaint::where('station_id',$oc->station_id)->whereDoesntHave('caseFir',fn($q)=>$case?$q->where('case_id','!=',$case->case_id):$q)->orderByDesc('submitted_date')->get();}

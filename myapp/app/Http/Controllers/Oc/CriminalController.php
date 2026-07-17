@@ -7,6 +7,7 @@ use App\Models\CaseAuditLog;
 use App\Models\CaseFir;
 use App\Models\Criminal;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class CriminalController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(Request $request): View
     {
         $oc=$this->oc();
@@ -76,5 +79,5 @@ class CriminalController extends Controller
             'nid_number'=>['nullable','string','max:20',Rule::unique('criminals','nid_number')->ignore($criminal?->criminal_id,'criminal_id')],
         ]);
     }
-    private function oc(): Officer{return Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();}
+    private function oc(): Officer{$oc=Officer::where('user_id',auth()->id())->where('is_oc',true)->firstOrFail();$this->ensureStationInJurisdiction($oc->station_id);return $oc;}
 }

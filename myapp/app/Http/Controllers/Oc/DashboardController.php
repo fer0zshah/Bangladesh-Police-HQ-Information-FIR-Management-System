@@ -7,10 +7,13 @@ use App\Models\CaseFir;
 use App\Models\CitizenComplaint;
 use App\Models\Evidence;
 use App\Models\Officer;
+use App\Traits\ScopedToJurisdiction;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    use ScopedToJurisdiction;
+
     public function index(): View
     {
         $oc = Officer::query()
@@ -22,6 +25,8 @@ class DashboardController extends Controller
         abort_unless($oc->station_id && $oc->station, 403, 'This OC account is not assigned to a station.');
 
         $stationId = $oc->station_id;
+        $this->ensureStationInJurisdiction($stationId);
+
         $stats = [
             'active_cases' => CaseFir::where('station_id', $stationId)
                 ->whereRaw('LOWER(status) <> ?', ['closed'])->count(),

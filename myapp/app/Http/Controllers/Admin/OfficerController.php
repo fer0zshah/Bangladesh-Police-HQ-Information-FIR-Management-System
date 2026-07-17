@@ -144,7 +144,9 @@ class OfficerController extends Controller
                 'name' => $officer->name,
                 'email' => $account['email'],
                 'phone' => $account['phone'] ?? null,
-                'role' => 'officer',
+                'role' => 'station_oc',
+                'station_id' => $officer->station_id,
+                'officer_id' => $officer->officer_id,
             ];
 
             if (! empty($account['password'])) {
@@ -175,7 +177,11 @@ class OfficerController extends Controller
             $officer->update(['is_oc' => false]);
 
             if ($officer->user) {
-                $officer->user->update(['role' => 'citizen']);
+                $officer->user->update([
+                    'role' => 'citizen',
+                    'station_id' => null,
+                    'officer_id' => null,
+                ]);
             }
         });
 
