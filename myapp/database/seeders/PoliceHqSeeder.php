@@ -281,6 +281,9 @@ class PoliceHqSeeder extends Seeder
                 'collected_date' => now()->subDay()->toDateString(),
             ]
         );
+
+        $this->seedFirDictionaryCases();
+        $this->seedComplaintDictionaryData();
     }
 
     private function station(string $name, array $attributes): Station
@@ -311,5 +314,204 @@ class PoliceHqSeeder extends Seeder
                 'password' => Hash::make('password'),
             ]
         );
+    }
+
+    private function seedFirDictionaryCases(): void
+    {
+        $casesByStation = [
+            'Ramna Model Thana' => [
+                ['Ramna Park Mobile Snatching Ring', 'Under Investigation', 8],
+                ['Hotel Intercontinental Fraud Complaint', 'Pending', 17],
+            ],
+            'Shahbag Thana' => [
+                ['Shahbag Intersection Assault Case', 'Under Investigation', 12],
+                ['DU Campus Bicycle Theft Series', 'Closed', 35],
+            ],
+            'Dhanmondi Thana' => [
+                ['Dhanmondi 27 Apartment Burglary', 'Pending', 5],
+                ['Rapa Plaza Extortion Attempt', 'Under Investigation', 22],
+            ],
+            'Gulshan Thana' => [
+                ['Gulshan Avenue Cyber Fraud', 'Under Investigation', 9],
+                ['Diplomatic Zone Vehicle Theft', 'Transferred', 41],
+            ],
+            'Kotwali Thana' => [
+                ['Kotwali Market Gold Shop Theft', 'Under Investigation', 14],
+                ['Laldighi Area Assault FIR', 'Closed', 52],
+            ],
+            'Panchlaish Thana' => [
+                ['Panchlaish Clinic Forgery Case', 'Pending', 18],
+                ['Nasirabad Road Robbery FIR', 'Under Investigation', 27],
+            ],
+            'Khulna Sadar Thana' => [
+                ['Khulna Sadar River Port Smuggling', 'Under Investigation', 11],
+                ['Picture Palace Area Mugging Case', 'Closed', 48],
+            ],
+            'Sonadanga Thana' => [
+                ['Sonadanga Bus Terminal Pickpocket Gang', 'Pending', 7],
+                ['KDA Avenue Shop Vandalism', 'Under Investigation', 26],
+            ],
+            'Savar Thana' => [
+                ['Savar EPZ Wage Fraud Complaint', 'Under Investigation', 16],
+                ['Hemayetpur Highway Robbery', 'Pending', 31],
+            ],
+            'Keraniganj Model Thana' => [
+                ['Keraniganj River Dock Cargo Theft', 'Under Investigation', 13],
+                ['Ati Bazar Land Dispute Assault', 'Closed', 39],
+            ],
+            'Narail Sadar Thana' => [
+                ['Narail Sadar Motorcycle Theft FIR', 'Pending', 10],
+                ['Rupganj Bazaar Clash Case', 'Closed', 44],
+            ],
+            'Lohagara Thana' => [
+                ['Lohagara Rural Road Robbery', 'Under Investigation', 21],
+            ],
+            'Rupsha Thana' => [
+                ['Rupsha Bridge Toll Extortion', 'Under Investigation', 15],
+            ],
+            'Dumuria Thana' => [
+                ['Dumuria Shrimp Enclosure Arson', 'Pending', 24],
+            ],
+            'Bogura Sadar Thana' => [
+                ['Bogura Sadar Jewellery Shop Robbery', 'Under Investigation', 6],
+                ['Satmatha Area Cyber Blackmail', 'Pending', 19],
+            ],
+            'Sherpur Thana' => [
+                ['Sherpur Highway Bus Robbery', 'Under Investigation', 28],
+            ],
+            'Nilphamari Sadar Thana' => [
+                ['Nilphamari Sadar Cattle Theft FIR', 'Pending', 20],
+            ],
+            'Saidpur Thana' => [
+                ['Saidpur Railway Colony Assault', 'Closed', 55],
+            ],
+        ];
+
+        foreach ($casesByStation as $stationName => $caseRows) {
+            $station = Station::where('name', $stationName)->first();
+
+            if (! $station) {
+                continue;
+            }
+
+            $investigator = Officer::firstOrCreate(
+                ['badge_number' => 'INV-'.str_pad((string) $station->station_id, 4, '0', STR_PAD_LEFT)],
+                [
+                    'station_id' => $station->station_id,
+                    'name' => 'Inspector '.$station->name,
+                    'rank' => 'Inspector',
+                    'status' => 'Active',
+                    'is_oc' => false,
+                ]
+            );
+
+            foreach ($caseRows as [$title, $status, $daysAgo]) {
+                CaseFir::updateOrCreate(
+                    [
+                        'station_id' => $station->station_id,
+                        'case_title' => $title,
+                    ],
+                    [
+                        'investigating_officer_id' => $investigator->officer_id,
+                        'complaint_id' => null,
+                        'date_filed' => now()->subDays($daysAgo)->toDateString(),
+                        'status' => $status,
+                    ]
+                );
+            }
+        }
+    }
+
+    private function seedComplaintDictionaryData(): void
+    {
+        $complaintsByStation = [
+            'Ramna Model Thana' => [
+                ['Farzana Akter', '3001000000011', 'Phone snatching near Ramna Park south gate.', 'Pending', 3],
+                ['Md. Rashed Karim', '3001000000012', 'Noise and intimidation complaint from a local business.', 'Under Review', 9],
+            ],
+            'Shahbag Thana' => [
+                ['Nusrat Tabassum', '3001000000021', 'Lost bag and suspected theft near museum gate.', 'Pending', 4],
+                ['Abdul Malek', '3001000000022', 'Assault complaint after a roadside dispute.', 'Escalated', 13],
+            ],
+            'Dhanmondi Thana' => [
+                ['Sadia Rahman', '3001000000031', 'Harassment complaint near Dhanmondi Lake walkway.', 'Under Review', 6],
+                ['Tanvir Hasan', '3001000000032', 'Shop burglary attempt reported from Road 27.', 'Escalated', 15],
+            ],
+            'Gulshan Thana' => [
+                ['Maliha Chowdhury', '3001000000041', 'Online financial fraud complaint linked to a courier payment.', 'Under Review', 5],
+                ['Imran Hossain', '3001000000042', 'Vehicle vandalism complaint near Gulshan Avenue.', 'Dismissed', 20],
+            ],
+            'Kotwali Thana' => [
+                ['Sanjida Islam', '3001000000051', 'Market pickpocket complaint near Kotwali crossing.', 'Pending', 7],
+                ['Mohammad Yusuf', '3001000000052', 'Gold shop employee intimidation complaint.', 'Escalated', 16],
+            ],
+            'Panchlaish Thana' => [
+                ['Jannatul Ferdous', '3001000000061', 'Clinic document forgery complaint.', 'Under Review', 8],
+                ['Arman Siddique', '3001000000062', 'Apartment parking assault complaint.', 'Pending', 18],
+            ],
+            'Khulna Sadar Thana' => [
+                ['Rafiq Ahmed', '3001000000071', 'River port cargo missing complaint.', 'Escalated', 11],
+                ['Mst. Salma Begum', '3001000000072', 'Neighborhood disturbance complaint.', 'Pending', 22],
+            ],
+            'Sonadanga Thana' => [
+                ['Parvez Alam', '3001000000081', 'Bus terminal wallet theft complaint.', 'Under Review', 10],
+                ['Tahmina Sultana', '3001000000082', 'Shop damage complaint after local dispute.', 'Pending', 19],
+            ],
+            'Savar Thana' => [
+                ['Rubel Mia', '3001000000091', 'Factory wage fraud complaint from EPZ worker group.', 'Under Review', 12],
+                ['Nadia Islam', '3001000000092', 'Highway robbery complaint near Hemayetpur.', 'Escalated', 21],
+            ],
+            'Keraniganj Model Thana' => [
+                ['Shakil Ahmed', '3001000000101', 'Cargo theft complaint from river dock.', 'Escalated', 14],
+                ['Rokeya Begum', '3001000000102', 'Land dispute threat complaint.', 'Pending', 25],
+            ],
+            'Narail Sadar Thana' => [
+                ['Biplob Biswas', '3001000000111', 'Motorcycle theft complaint from sadar bazar.', 'Under Review', 6],
+                ['Aklima Khatun', '3001000000112', 'Local clash complaint near union road.', 'Dismissed', 34],
+            ],
+            'Lohagara Thana' => [
+                ['Monirul Islam', '3001000000121', 'Rural road robbery complaint.', 'Escalated', 17],
+            ],
+            'Rupsha Thana' => [
+                ['Hasib Khan', '3001000000131', 'Extortion complaint near Rupsha Bridge approach road.', 'Under Review', 9],
+            ],
+            'Dumuria Thana' => [
+                ['Mahmuda Akter', '3001000000141', 'Shrimp enclosure arson threat complaint.', 'Pending', 23],
+            ],
+            'Bogura Sadar Thana' => [
+                ['Sabbir Rahman', '3001000000151', 'Jewellery shop robbery witness complaint.', 'Escalated', 7],
+                ['Fahmida Yeasmin', '3001000000152', 'Cyber blackmail complaint from Satmatha area.', 'Under Review', 18],
+            ],
+            'Sherpur Thana' => [
+                ['Delwar Hossain', '3001000000161', 'Bus robbery complaint on highway route.', 'Pending', 12],
+            ],
+            'Nilphamari Sadar Thana' => [
+                ['Mizanur Rahman', '3001000000171', 'Cattle theft complaint from village market.', 'Pending', 13],
+            ],
+            'Saidpur Thana' => [
+                ['Anika Saha', '3001000000181', 'Railway colony assault complaint.', 'Under Review', 28],
+            ],
+        ];
+
+        foreach ($complaintsByStation as $stationName => $complaintRows) {
+            $station = Station::where('name', $stationName)->first();
+
+            if (! $station) {
+                continue;
+            }
+
+            foreach ($complaintRows as [$name, $nid, $description, $status, $daysAgo]) {
+                CitizenComplaint::updateOrCreate(
+                    ['complainant_nid' => $nid],
+                    [
+                        'station_id' => $station->station_id,
+                        'complainant_name' => $name,
+                        'description' => $description,
+                        'submitted_date' => now()->subDays($daysAgo)->toDateString(),
+                        'status' => $status,
+                    ]
+                );
+            }
+        }
     }
 }

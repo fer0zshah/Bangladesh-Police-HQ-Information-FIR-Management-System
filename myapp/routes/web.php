@@ -128,11 +128,23 @@ Route::middleware(['auth', CheckRole::class.':super_admin'])
         Route::get('cases',
             [App\Http\Controllers\Admin\CaseController::class, 'index'])
             ->name('cases.index');
+        Route::get('cases/hq/{station}',
+            [App\Http\Controllers\Admin\CaseController::class, 'hq'])
+            ->name('cases.hq');
+        Route::get('cases/station/{station}',
+            [App\Http\Controllers\Admin\CaseController::class, 'station'])
+            ->name('cases.station');
 
         // ── Phase 3: Complaints — read-only with filters ──────────────
         Route::get('complaints',
             [App\Http\Controllers\Admin\ComplaintController::class, 'index'])
             ->name('complaints.index');
+        Route::get('complaints/hq/{station}',
+            [App\Http\Controllers\Admin\ComplaintController::class, 'hq'])
+            ->name('complaints.hq');
+        Route::get('complaints/station/{station}',
+            [App\Http\Controllers\Admin\ComplaintController::class, 'station'])
+            ->name('complaints.station');
 
         // ── Phase 4: Analytics ────────────────────────────────────────
         Route::get('analytics',
