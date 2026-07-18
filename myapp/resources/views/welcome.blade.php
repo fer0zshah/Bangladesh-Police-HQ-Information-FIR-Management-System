@@ -5,110 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bangladesh Police HQ - Citizen Portal</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-        
-        /* Public Navigation Bar */
-        nav { background-color: #1a252f; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-brand { color: #f1c40f; font-size: 20px; font-weight: bold; text-decoration: none; }
-        .nav-links a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; font-size: 14px; }
-        .nav-links a:hover { color: #3498db; }
-        .btn-auth { background-color: #3498db; padding: 8px 15px; border-radius: 4px; color: white !important; }
-        .btn-auth:hover { background-color: #2980b9; }
-
-        /* Hero Section */
-        .hero { background-color: #2c3e50; color: white; text-align: center; padding: 80px 20px; }
-        .hero h1 { margin: 0; font-size: 36px; }
-        .hero p { font-size: 18px; margin-top: 15px; color: #bdc3c7; }
-        
-        /* Content Container */
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; text-align: center; }
-        
-        /* Quick Action Cards */
-        .card-grid { display: flex; justify-content: space-between; gap: 20px; margin-top: 40px; }
-        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); width: 30%; }
-        .card h3 { color: #2980b9; margin-top: 0; }
-        .card a { display: inline-block; margin-top: 15px; text-decoration: none; background: #2c3e50; color: white; padding: 10px 15px; border-radius: 4px; }
-        .card a:hover { background: #1a252f; }
+        *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f4f7f6;color:#243444;font-family:Arial,sans-serif}
+        .hero{min-height:318px;background:#2d4358;padding:96px 20px 70px;color:#fff;text-align:center}.hero h1{margin:0;font-size:clamp(34px,4vw,48px)}.hero p{margin:18px auto 0;max-width:760px;color:#c7d0d8;font-size:18px;line-height:1.6}
+        .container{width:min(1240px,calc(100% - 40px));margin:0 auto}.help{padding:50px 0;text-align:center}.help h2{margin:0;color:#1f3040;font-size:30px}
+        .card-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:44px}.card{min-height:282px;border:1px solid #e5ebef;border-radius:11px;background:#fff;padding:36px 30px;box-shadow:0 4px 12px rgba(31,48,64,.09);display:flex;flex-direction:column;align-items:center}.card h3{margin:0;color:#2980b9;font-size:24px}.card p{max-width:290px;margin:24px auto 0;color:#273746;font-size:17px;line-height:1.35}.card-link{margin-top:auto;border:1px solid #bae6fd;border-radius:7px;background:#f0f9ff;padding:13px 22px;color:#0369a1;font-size:16px;font-weight:700;text-decoration:none}
+        .info-section{background:#fff;border-top:1px solid #e1e8ed;padding:48px 0}.info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:40px}.info-grid h3{color:#1f3040}.info-grid p{color:#657581;line-height:1.7}
+        @media(max-width:900px){.card-grid{grid-template-columns:1fr}}@media(max-width:680px){.info-grid{grid-template-columns:1fr}}
     </style>
 </head>
 <body>
-
-    <nav>
-        <a href="/" class="nav-brand">BD Police HQ Portal</a>
-        <div class="nav-links">
-            <a href="/">Home</a> 
-            <a href="/stations">Browse Stations</a>
-            <a href="#">About Us</a>
-            <a href="#">Contact</a>
-            
-            @guest
-                <a href="/login" class="btn-auth">Login</a>
-                <a href="/register" class="btn-auth">Register</a>
-            @endguest
-
-            @auth
-                @if(auth()->user()->role === 'super_admin')
-                    <a href="/admin/dashboard" class="btn-auth">Go to HQ Dashboard →</a>
-                @elseif(auth()->user()->role === 'officer')
-                    <a href="/oc/dashboard" class="btn-auth">Go to OC Dashboard →</a>
-                @else
-                    <a href="/citizen/my-complaints" class="btn-auth">My Complaints →</a>
-                @endif
-            @endauth
-        </div>
-    </nav>
-
-    <header class="hero">
-        <h1>Welcome to the Central Police HQ System</h1>
-        <p>A transparent, secure, and public-facing portal for citizens and law enforcement.</p>
-    </header>
-
-    <div class="container">
-        <h2>How can we help you today?</h2>
-        
-        <div class="card-grid">
-            <div class="card">
-                <h3>View Public Cases</h3>
-                <p>Browse general information regarding active FIRs and closed cases across the country.</p>
-                <a href="/cases">View Cases</a>
+    <x-citizen-portal-nav />
+    <header class="hero"><h1>Welcome to the Central Police HQ System</h1><p>A transparent, secure, and public-facing portal for citizens and law enforcement.</p></header>
+    <main>
+        <section class="help container">
+            <h2>How can we help you today?</h2>
+            <div class="card-grid">
+                <article class="card"><h3>Wanted Criminals</h3><p>Browse the public wanted-person registry by name or known alias.</p><a href="{{route('wanted-criminals.index')}}" class="card-link">View Wanted List</a></article>
+                <article class="card"><h3>Find a Station</h3><p>Navigate the police station directory and locate the thana responsible for your area.</p><a href="{{route('stations.index')}}" class="card-link">Find Stations</a></article>
+                <article class="card"><h3>File a Complaint</h3><p>Registered citizens can submit a preliminary complaint directly to an active police thana.</p><a href="{{route('citizen.complaints.create')}}" class="card-link">Submit Complaint</a></article>
             </div>
-
-            <div class="card">
-                <h3>Find a Station</h3>
-                <p>Locate the nearest police station in your district, including contact details and OC information.</p>
-                <a href="{{ route('stations.index') }}">Find Stations</a>
-            </div>
-
-            <div class="card">
-                <h3>File a Complaint</h3>
-                <p>Registered citizens can securely submit preliminary complaints directly to their local station.</p>
-                <a href="/citizen/my-complaints">Submit Complaint</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="container">
-        <h2>System Database Overview</h2>
-        <div class="card-grid">
-            <div class="card">
-                <h3>Police Officers</h3>
-                <p>{{ \App\Models\Officer::count() }}</p>
-                <a href="/officers">View List</a>
-            </div>
-            
-            <div class="card">
-                <h3>Criminals (W)</h3>
-                <p>{{ \App\Models\Criminal::where('wanted_status', 1)->count() }}</p>
-                <a href="/criminals">View List</a>
-            </div>
-
-            <div class="card">
-                <h3>Total Cases</h3>
-                <p>{{ \App\Models\CaseFir::count() }}</p>
-                <a href="/cases">View List</a>
-            </div>
-        </div>
-    </div>
-
+        </section>
+        <section class="info-section"><div class="container info-grid"><article id="about"><h3>About the portal</h3><p>The portal connects public station information, citizen complaint submission and role-based police operations through one central database.</p></article><article id="contact"><h3>Need assistance?</h3><p>Use the station directory to locate the responsible thana and view its public contact information.</p></article></div></section>
+    </main>
 </body>
 </html>
