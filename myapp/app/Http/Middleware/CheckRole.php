@@ -13,25 +13,28 @@ class CheckRole
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user()) {
             return redirect()->route('login');
         }
 
-        if ($request->user()->role !== $role) {
+        if (! in_array($request->user()->role, $roles, true)) {
             // Friendly redirect to the user's corresponding dashboard if they don't have this role
             $userRole = $request->user()->role;
             if ($userRole === 'super_admin') {
                 return redirect('/admin/dashboard');
-            } elseif ($userRole === 'officer') {
+            } elseif ($userRole === 'station_oc') {
                 return redirect('/oc/dashboard');
+            } elseif (in_array($userRole, ['metro_head', 'district_head'], true)
+                && \Illuminate\Support\Facades\Route::has('command.dashboard')) {
+                return redirect('/command/dashboard');
             } else {
-                return redirect('/citizen/my-complaints');
+                return redirect('/');
             }
         }
 
-        if ($role === 'officer' && ! $request->user()->officer?->is_oc) {
+        if (in_array('station_oc', $roles, true) && ! $request->user()->officer?->is_oc) {
             abort(403, 'OC access has not been assigned to this officer account.');
         }
 

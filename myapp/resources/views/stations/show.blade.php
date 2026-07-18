@@ -20,39 +20,22 @@
         .stat { background: #f8fafb; border: 1px solid #edf1f4; border-radius: 10px; padding: 16px; }
         .stat strong { display: block; font-size: 26px; color: #1a252f; }
         .stat span { color: #7f8c8d; text-transform: uppercase; letter-spacing: .08em; font-size: 11px; }
-        .section-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 22px; }
+        .section-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 22px; }
         .section-title { margin: 0 0 14px; color: #1a252f; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #7f8c8d; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; border-bottom: 1px solid #edf1f4; padding: 12px 10px; }
         td { border-bottom: 1px solid #edf1f4; padding: 14px 10px; font-size: 14px; vertical-align: top; }
-        .badge { display: inline-block; border-radius: 999px; background: #eef5fb; color: #2980b9; padding: 5px 9px; font-size: 12px; font-weight: bold; }
-        .case-link { color: #2980b9; font-weight: bold; text-decoration: none; }
-        button.case-link { border: 0; background: transparent; cursor: pointer; font: inherit; padding: 0; }
         .officer-list { display: grid; gap: 10px; }
         .officer { border: 1px solid #edf1f4; border-radius: 10px; padding: 12px; background: #f8fafb; }
         .officer strong { display: block; color: #1a252f; }
         .officer span { color: #7f8c8d; font-size: 13px; }
         .empty { color: #7f8c8d; padding: 18px; background: #f8fafb; border-radius: 10px; }
-        .prompt { margin-top: 24px; background: #1a252f; color: white; border-radius: 12px; padding: 24px; display: flex; justify-content: space-between; gap: 20px; align-items: center; }
-        .prompt p { margin: 6px 0 0; color: #bdc3c7; }
-        .prompt-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .prompt-actions a { border-radius: 8px; padding: 11px 16px; text-decoration: none; font-weight: bold; white-space: nowrap; }
-        .btn-login { color: #1a252f; background: #f1c40f; }
-        .btn-register { color: white; background: #3498db; }
-        .btn-citizen { color: #1a252f; background: #f1c40f; }
-        .is-hidden { display: none; }
         @media (max-width: 860px) { .stats, .section-grid { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 640px) { nav, .prompt { align-items: flex-start; flex-direction: column; } .stats, .section-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="/" class="nav-brand">BD Police HQ Portal</a>
-        <div>
-            <a href="{{ route('stations.index') }}">Browse Stations</a>
-            <a href="/login">Login</a>
-        </div>
-    </nav>
+    <x-citizen-portal-nav />
 
     <header class="hero">
         <div class="wrap">
@@ -76,33 +59,6 @@
 
         <div class="section-grid">
             <section class="card">
-                <h2 class="section-title">Active Public Cases</h2>
-                @if($cases->count())
-                    <table>
-                        <thead><tr><th>Type / Title</th><th>Status</th><th>Date</th><th>Public Detail</th></tr></thead>
-                        <tbody>
-                            @foreach($cases as $case)
-                                <tr>
-                                    <td>{{ $case->case_title }}</td>
-                                    <td><span class="badge">{{ $case->status }}</span></td>
-                                    <td>{{ date('d M Y', strtotime($case->date_filed)) }}</td>
-                                    <td>
-                                        @guest
-                                            <button type="button" class="case-link js-detail-auth">View Detail</button>
-                                        @else
-                                            <a class="case-link" href="{{ route('stations.cases.show', [$station, $case]) }}">View Detail</a>
-                                        @endguest
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @else
-                    <div class="empty">No active public cases listed for this station.</div>
-                @endif
-            </section>
-
-            <section class="card">
                 <h2 class="section-title">Officers at this Station</h2>
                 <div class="officer-list">
                     @forelse($officers as $officer)
@@ -117,25 +73,6 @@
             </section>
         </div>
 
-        <section id="detail-auth-prompt" class="prompt is-hidden">
-            <div>
-                <strong>Submit a complaint?</strong>
-                <p>Register or log in to submit and track a complaint securely.</p>
-            </div>
-            <div class="prompt-actions">
-                <a class="btn-login" href="/login">Login</a>
-                <a class="btn-register" href="/register">Register</a>
-            </div>
-        </section>
     </main>
-    <script>
-        document.querySelectorAll('.js-detail-auth').forEach(button => {
-            button.addEventListener('click', () => {
-                const prompt = document.getElementById('detail-auth-prompt');
-                prompt.classList.remove('is-hidden');
-                prompt.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-        });
-    </script>
 </body>
 </html>

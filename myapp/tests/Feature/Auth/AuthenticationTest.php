@@ -27,12 +27,12 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect('/citizen/my-complaints');
+        $response->assertRedirect('/');
     }
 
     public function test_oc_redirected_to_oc_dashboard(): void
     {
-        $user = User::factory()->create(['role' => 'officer']);
+        $user = User::factory()->create(['role' => 'station_oc']);
 
         $response = $this->post('/login', [
             'email' => $user->email,

@@ -4,47 +4,47 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Models\CaseFir;
 use App\Models\Station;
 
 class StationController extends Controller
 {
     public function index(Request $request): View
     {
-        $stations = Station::query()
-            ->withCount([
-                'cases',
-                'officers' => fn ($query) => $query->whereRaw('LOWER(status) = ?', ['active']),
-            ])
+        $headquarters = fn (string $type) => Station::query()
+            ->where('type', $type)
+            ->where(fn ($query) => $query->where('is_active', true)->orWhereRaw("LOWER(status) = 'active'"))
+            ->withCount(['children as thanas_count' => fn ($query) => $query->where('type', 'thana')])
             ->when($request->filled('search'), function ($query) use ($request) {
-                $search = $request->string('search')->toString();
-
-                $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('district', 'like', "%{$search}%")
-                        ->orWhere('address', 'like', "%{$search}%");
-                });
+                $term = '%'.$request->string('search')->toString().'%';
+                $query->where(fn ($query) => $query
+                    ->where('name', 'like', $term)
+                    ->orWhere('district', 'like', $term)
+                    ->orWhere('division', 'like', $term)
+                    ->orWhere('address', 'like', $term));
             })
-            ->when($request->filled('district'), fn ($query) => $query->where('district', $request->string('district')->toString()))
-            ->whereRaw('LOWER(status) = ?', ['active'])
-            ->orderBy('district')
             ->orderBy('name')
-            ->paginate(9)
-            ->withQueryString();
+            ->get();
 
-        $districts = Station::query()
-            ->whereRaw('LOWER(status) = ?', ['active'])
-            ->select('district')
-            ->distinct()
-            ->orderBy('district')
-            ->pluck('district');
+        $metroHqs = $headquarters('metropolitanHQ');
+        $districtHqs = $headquarters('districtHQ');
 
-        return view('stations.index', compact('stations', 'districts'));
+        return view('stations.index', compact('metroHqs', 'districtHqs'));
     }
 
     public function show(Station $station): View
     {
         abort_unless(strtolower($station->status) === 'active', 404);
+
+        if (in_array($station->type, ['metropolitanHQ', 'districtHQ'], true)) {
+            $thanas = $station->children()
+                ->where('type', 'thana')
+                ->whereRaw("LOWER(status) = 'active'")
+                ->withCount(['cases', 'officers'])
+                ->orderBy('name')
+                ->get();
+
+            return view('stations.hq-show', compact('station', 'thanas'));
+        }
 
         $station->loadCount(['cases', 'officers']);
 
@@ -55,34 +55,12 @@ class StationController extends Controller
             'evidence_items' => $station->cases()->join('evidence', 'evidence.case_id', '=', 'case_firs.case_id')->count(),
         ];
 
-        $cases = $station->cases()
-            ->with('officer')
-            ->withCount(['evidence', 'criminals'])
-            ->whereRaw("LOWER(status) NOT IN ('closed', 'transferred')")
-            ->orderByDesc('date_filed')
-            ->orderByDesc('case_id')
-            ->get();
-
         $officers = $station->officers()
             ->whereRaw('LOWER(status) = ?', ['active'])
             ->orderBy('rank')
             ->orderBy('name')
             ->get(['officer_id', 'name', 'rank']);
 
-        return view('stations.show', compact('station', 'stats', 'cases', 'officers'));
-    }
-
-    public function caseShow(Station $station, CaseFir $case): View
-    {
-        abort_unless(strtolower($station->status) === 'active', 404);
-        abort_unless((int) $case->station_id === (int) $station->station_id, 404);
-
-        $case->load(['officer', 'criminals' => fn ($query) => $query->select('criminals.criminal_id', 'name', 'alias', 'wanted_status')])
-            ->loadCount(['evidence', 'criminals']);
-
-        return view('stations.case-show', [
-            'station' => $station,
-            'case' => $case,
-        ]);
+        return view('stations.show', compact('station', 'stats', 'officers'));
     }
 }

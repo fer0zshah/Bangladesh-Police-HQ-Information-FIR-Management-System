@@ -144,7 +144,7 @@ class OfficerController extends Controller
                 'name' => $officer->name,
                 'email' => $account['email'],
                 'phone' => $account['phone'] ?? null,
-                'role' => 'officer',
+                'role' => 'station_oc',
             ];
 
             if (! empty($account['password'])) {

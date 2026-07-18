@@ -96,7 +96,7 @@ class OfficerManagementTest extends TestCase
             ->assertSessionHas('success');
         $this->assertTrue($officer->is_oc);
         $this->assertNotNull($account);
-        $this->assertSame('officer', $account->role);
+        $this->assertSame('station_oc', $account->role);
         $this->assertTrue(Hash::check('SecurePass123!', $account->password));
 
         $this->actingAs($account)
@@ -115,7 +115,7 @@ class OfficerManagementTest extends TestCase
 
         $this->actingAs($account->fresh())
             ->get(route('oc.dashboard'))
-            ->assertRedirect('/citizen/my-complaints');
+            ->assertRedirect('/');
     }
 
     public function test_repromotion_updates_the_existing_linked_account(): void
@@ -143,7 +143,7 @@ class OfficerManagementTest extends TestCase
         $this->assertDatabaseHas('users', [
             'id' => $accountId,
             'email' => 'renamed.oc@example.com',
-            'role' => 'officer',
+            'role' => 'station_oc',
         ]);
         $this->assertDatabaseCount('users', 2);
     }
@@ -200,7 +200,7 @@ class OfficerManagementTest extends TestCase
 
         $this->actingAs($citizen)
             ->get(route('admin.officers.index'))
-            ->assertRedirect('/citizen/my-complaints');
+            ->assertRedirect('/');
     }
 
     private function superAdmin(): User

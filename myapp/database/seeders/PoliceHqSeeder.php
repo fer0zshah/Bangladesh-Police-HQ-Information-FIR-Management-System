@@ -101,7 +101,7 @@ class PoliceHqSeeder extends Seeder
             'email' => 'oc@dhaka.com',
             'nid_number' => '9998887776',
             'phone' => '01711000000',
-            'role' => 'officer',
+            'role' => 'station_oc',
             'password' => Hash::make('password'),
         ]);
 
