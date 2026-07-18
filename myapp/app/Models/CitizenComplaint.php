@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class CitizenComplaint extends Model
 {
     protected $primaryKey = 'complaint_id';
-    protected $fillable = ['station_id', 'complainant_name', 'complainant_nid', 'description', 'submitted_date', 'status'];
+    protected $fillable = [
+        'station_id', 'complainant_name', 'complainant_nid',
+        'complaint_title', 'description', 'submitted_date', 'status',
+    ];
+
+    protected function casts(): array
+    {
+        return ['submitted_date' => 'date'];
+    }
 
     public function station(): BelongsTo
     { 

@@ -12,6 +12,11 @@ class CaseFir extends Model
     protected $primaryKey = 'case_id';
     protected $fillable = ['station_id', 'investigating_officer_id', 'complaint_id', 'case_title', 'date_filed', 'status'];
 
+    protected function casts(): array
+    {
+        return ['date_filed' => 'date'];
+    }
+
     public function station(): BelongsTo
     {
         return $this->belongsTo(Station::class, 'station_id', 'station_id');

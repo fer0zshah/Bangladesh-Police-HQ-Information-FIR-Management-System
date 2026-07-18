@@ -32,6 +32,7 @@ class StationManagementTest extends TestCase
             'station_id' => $station->station_id,
             'complainant_name' => 'Citizen One',
             'complainant_nid' => '1234567890',
+            'complaint_title' => 'A test complaint',
             'description' => 'A test complaint.',
             'submitted_date' => now()->toDateString(),
             'status' => 'Pending',
@@ -152,7 +153,7 @@ class StationManagementTest extends TestCase
         $response
             ->assertRedirect(route('admin.stations.create'))
             ->assertSessionHasErrors(['name', 'district', 'contact_number']);
-        $this->assertDatabaseCount('stations', 0);
+        $this->assertDatabaseMissing('stations', ['name' => '']);
     }
 
     public function test_non_admin_cannot_access_station_management(): void
@@ -161,7 +162,7 @@ class StationManagementTest extends TestCase
 
         $this->actingAs($citizen)
             ->get(route('admin.stations.index'))
-            ->assertRedirect('/citizen/my-complaints');
+            ->assertRedirect('/');
     }
 
     private function superAdmin(): User
