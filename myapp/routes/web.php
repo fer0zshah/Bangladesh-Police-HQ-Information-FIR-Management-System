@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StationController;
 use App\Http\Controllers\OfficerController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PublicWantedCriminalController;
 use App\Http\Middleware\CheckRole;
 /*
 |--------------------------------------------------------------------------
@@ -16,11 +17,11 @@ Route::get('/', function () {
 
 // Publicly browse stations and individual public profiles
 Route::get('/stations', [StationController::class, 'index'])->name('stations.index');
-Route::get('/stations/{station}', [StationController::class, 'show'])->name('stations.show'); // Profile with crime stats & public case list
-Route::get('/stations/{station}/cases/{case}', [StationController::class, 'caseShow'])->name('stations.cases.show');
+Route::get('/stations/{station}', [StationController::class, 'show'])->name('stations.show');
 
-// Publicly viewable records (restricted fields hidden in the views)
-Route::get('/public-cases', [StationController::class, 'publicCases']); 
+// Guests may browse the wanted list; profile details require authentication.
+Route::get('/wanted-criminals', [PublicWantedCriminalController::class, 'index'])
+    ->name('wanted-criminals.index');
 Route::get('/public-officers', [OfficerController::class, 'publicList']);
 
 
@@ -30,16 +31,26 @@ Route::get('/public-officers', [OfficerController::class, 'publicList']);
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', CheckRole::class.':citizen'])->prefix('citizen')->group(function () {
-    Route::get('/my-complaints', function () {
-        return view('citizen.dashboard');
-    })->name('citizen.dashboard');
+    Route::redirect('/my-complaints', '/profile');
+    Route::get('/station-options/districts', [App\Http\Controllers\Citizen\ComplaintController::class, 'districts'])
+        ->name('citizen.station-options.districts');
+    Route::get('/station-options/thanas', [App\Http\Controllers\Citizen\ComplaintController::class, 'thanas'])
+        ->name('citizen.station-options.thanas');
+    Route::get('/station-options/map', [App\Http\Controllers\Citizen\ComplaintController::class, 'mapStations'])
+        ->name('citizen.station-options.map');
+    Route::get('/complaints/create', [App\Http\Controllers\Citizen\ComplaintController::class, 'create'])
+        ->name('citizen.complaints.create');
+    Route::post('/complaints', [App\Http\Controllers\Citizen\ComplaintController::class, 'store'])
+        ->name('citizen.complaints.store');
+    Route::get('/complaints/{complaint}', [App\Http\Controllers\Citizen\ComplaintController::class, 'show'])
+        ->name('citizen.complaints.show');
 });
 
 /*|--------------------------------------------------------------------------
-| STATION OC DASHBOARD (Only 'officer' can access)
+| STATION OC DASHBOARD (Only 'station_oc' can access)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(function () {
+Route::middleware(['auth', CheckRole::class.':station_oc'])->prefix('oc')->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Oc\DashboardController::class, 'index'])
         ->name('oc.dashboard');
     Route::get('/complaints', [App\Http\Controllers\Oc\ComplaintController::class, 'index'])
@@ -69,6 +80,14 @@ Route::middleware(['auth', CheckRole::class.':officer'])->prefix('oc')->group(fu
     Route::put('/evidence/{evidence}', [App\Http\Controllers\Oc\EvidenceController::class, 'update'])->name('oc.evidence.update');
     Route::get('/officers', [App\Http\Controllers\Oc\OfficerController::class, 'index'])->name('oc.officers.index');
 });
+
+Route::middleware(['auth', CheckRole::class.':metro_head,district_head'])
+    ->prefix('command')
+    ->name('command.')
+    ->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Command\DashboardController::class, 'index'])
+            ->name('dashboard');
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -140,11 +159,11 @@ Route::get('/dashboard', function () {
     if ($user) {
         if ($user->role === 'super_admin') {
             return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'officer') {
+        } elseif ($user->role === 'station_oc') {
             return redirect()->route('oc.dashboard');
         }
     }
-    return redirect()->route('citizen.dashboard');
+    return redirect('/');
 })->middleware(['auth'])->name('dashboard');
 
 /*
@@ -153,6 +172,8 @@ Route::get('/dashboard', function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    Route::get('/wanted-criminals/{criminal}', [PublicWantedCriminalController::class, 'show'])
+        ->name('wanted-criminals.show');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
